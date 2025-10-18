@@ -1,3 +1,9 @@
-// Timeline domain module - placeholder for Phase 7
+// Timeline domain module
 
-// This module will be implemented in Phase 7: Domain Layer - Timeline Module
+pub mod entity;
+pub mod repository;
+pub mod service;
+
+pub use entity::*;
+pub use repository::*;
+pub use service::*;

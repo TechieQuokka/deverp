@@ -449,7 +449,6 @@ impl TaskService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::task::{TaskPriority, TaskType};
 
     #[test]
     fn test_valid_status_transitions() {

@@ -302,21 +302,24 @@
 
 #### 7.1 Timeline Entity 정의
 
-- [ ] Timeline 구조체 정의
-- [ ] Milestone 구조체 정의
+- [x] Timeline 구조체 정의
+- [x] Milestone 구조체 정의
 
 #### 7.2 Timeline Repository 구현
 
-- [ ] Repository 트레이트 정의
-- [ ] PostgreSQL Repository 구현
+- [x] Repository 트레이트 정의
+- [x] PostgreSQL Repository 구현
 
 #### 7.3 Timeline Service 구현
 
-- [ ] 타임라인 생성/관리
-- [ ] 마일스톤 추적
-- [ ] 일정 검증 로직
+- [x] 타임라인 생성/관리
+- [x] 마일스톤 추적
+- [x] 일정 검증 로직
 
 #### 7.4 Timeline 단위 테스트
+
+- [x] Entity 유효성 검증 테스트
+- [x] Service 레이어 단위 테스트 (mockall 사용)
 
 ---
 

@@ -249,6 +249,7 @@ impl ResourceService {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use async_trait::async_trait;
     use crate::domain::resource::entity::{ResourceStatus, ResourceType};
     use chrono::Utc;
     use mockall::mock;
@@ -287,7 +288,7 @@ mod tests {
             url: Some("https://example.com".to_string()),
             documentation_url: Some("https://docs.example.com".to_string()),
             license: Some("MIT".to_string()),
-            status: ResourceStatus::Active,
+            status: Some(ResourceStatus::Active),
             metadata: None,
             tags: Some(vec!["test".to_string()]),
             created_at: Utc::now(),
@@ -308,7 +309,6 @@ mod tests {
     #[tokio::test]
     async fn test_create_resource_success() {
         let mut mock_repo = MockResourceRepo::new();
-        let test_resource = create_test_resource(1, "Test Library");
 
         mock_repo
             .expect_create()
@@ -395,7 +395,6 @@ mod tests {
     #[tokio::test]
     async fn test_get_resource_success() {
         let mut mock_repo = MockResourceRepo::new();
-        let test_resource = create_test_resource(1, "Test Library");
 
         mock_repo
             .expect_find_by_id()
@@ -436,7 +435,6 @@ mod tests {
     #[tokio::test]
     async fn test_delete_resource_with_projects() {
         let mut mock_repo = MockResourceRepo::new();
-        let test_resource = create_test_resource(1, "Test Library");
 
         mock_repo
             .expect_find_by_id()
@@ -475,7 +473,7 @@ mod tests {
                     resource_id: link.resource_id,
                     usage_notes: link.usage_notes,
                     version_used: link.version_used,
-                    is_critical: link.is_critical.unwrap_or(false),
+                    is_critical: Some(link.is_critical.unwrap_or(false)),
                     added_at: Utc::now(),
                     removed_at: None,
                 })
@@ -496,6 +494,6 @@ mod tests {
         let link = result.unwrap();
         assert_eq!(link.project_id, 1);
         assert_eq!(link.resource_id, 1);
-        assert_eq!(link.is_critical, true);
+        assert_eq!(link.is_critical, Some(true));
     }
 }

@@ -7,7 +7,13 @@
       "Bash(sqlx migrate add alter_task_hours_to_double_precision)",
       "Bash(sqlx migrate run)",
       "Bash(cargo fix --lib -p deverp --allow-dirty)",
-      "Bash(git add -A)"
+      "Bash(git add -A)",
+      "Bash(git reset migrations/migrations/)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Implement domain layer and database schema for DevERP\n\nComplete implementation of core domain entities, repositories, and services for Project, Task, and Resource management.\n\n**Database Layer**:\n- Complete PostgreSQL schema with migrations\n- Tables: projects, tasks, task_dependencies, task_comments, resources, project_resources, timelines, milestones, tags\n- Database views for reporting and analytics\n- Indexes for query optimization\n- Seed data for initial setup\n- Migration to convert NUMERIC to DOUBLE PRECISION for better Rust compatibility\n\n**Domain Layer (Entities)**:\n- Project entity with status (Planning, Active, OnHold, Completed, Archived, Cancelled)\n- Task entity with status, priority, type, and dependency tracking\n- Resource entity with type, status, and project linkage\n- Timeline and Milestone entities\n- Tag system for flexible categorization\n- All entities use UUID for external references and soft deletes\n\n**Repository Layer**:\n- Repository traits for Project, Task, and Resource\n- PostgreSQL implementations using sqlx\n- Compile-time verified SQL queries via sqlx macros\n- SQLX offline mode support with cached query metadata\n- Transaction support for complex operations\n\n**Service Layer**:\n- Project service with CRUD operations, filtering, and statistics\n- Task service with dependency management and cycle detection\n- Resource service with usage tracking and project linkage\n- Comprehensive validation and business logic\n\n**Type System**:\n- Enum types for status, priority, resource type with proper sqlx::Type derives\n- Optional fields properly typed (progress_percentage, is_critical, task_type, etc.)\n- Type-safe database mapping with FromRow derives\n\n**Configuration**:\n- Added bigdecimal dependency for NUMERIC support (later migrated to DOUBLE PRECISION)\n- SQLx offline mode enabled for compilation without live database\n- Environment configuration with .env support\n\n**Key Features**:\n- Layered architecture (CLI → Domain → Infrastructure → Database)\n- Repository pattern for data access abstraction\n- Soft delete support across all entities\n- Comprehensive error handling with custom DevErpError types\n- Type-safe query building with sqlx compile-time verification\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(cargo build --lib -p deverp)",
+      "Bash(cargo test --lib)",
+      "Bash(cargo sqlx prepare --lib -p deverp)",
+      "Bash(cargo build --lib)"
     ],
     "deny": [],
     "ask": []

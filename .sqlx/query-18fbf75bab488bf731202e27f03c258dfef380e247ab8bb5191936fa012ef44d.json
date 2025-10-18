@@ -1,0 +1,92 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                id, timeline_id, project_id, name, description,\n                target_date, actual_date,\n                status as \"status!: MilestoneStatus\",\n                completion_percentage as \"completion_percentage!\",\n                metadata,\n                created_at, updated_at, deleted_at\n            FROM milestones\n            WHERE deleted_at IS NULL\n            ORDER BY target_date ASC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "timeline_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "project_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "target_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 6,
+        "name": "actual_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 7,
+        "name": "status!: MilestoneStatus",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "completion_percentage!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "metadata",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 10,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 11,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 12,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "18fbf75bab488bf731202e27f03c258dfef380e247ab8bb5191936fa012ef44d"
+}

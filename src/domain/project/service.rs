@@ -494,7 +494,7 @@ mod tests {
             end_date: Some(NaiveDate::from_ymd_opt(2025, 12, 31).unwrap()),
             actual_start_date: None,
             actual_end_date: None,
-            progress_percentage: 0,
+            progress_percentage: Some(0),
             repository_url: None,
             repository_branch: Some("main".to_string()),
             tags: Some(vec!["test".to_string()]),

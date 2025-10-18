@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE timelines SET deleted_at = NULL WHERE id = $1 AND deleted_at IS NOT NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4bf1fa7bfce503fbf5eb7067de5f78ae843f351a7dea807d5761511d7c4c490f"
+}

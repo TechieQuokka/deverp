@@ -1,0 +1,82 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                id, project_id, name, description,\n                timeline_type as \"timeline_type!: TimelineType\",\n                start_date, end_date,\n                status as \"status!: TimelineStatus\",\n                created_at, updated_at, deleted_at\n            FROM timelines\n            WHERE project_id = $1 AND deleted_at IS NULL\n            ORDER BY start_date DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "project_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "timeline_type!: TimelineType",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "start_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 6,
+        "name": "end_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 7,
+        "name": "status!: TimelineStatus",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "3a5bd51cb45047734e17eaa527923223d14e22c982d3d73612bd52ccc344bdf2"
+}

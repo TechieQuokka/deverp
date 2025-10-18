@@ -509,8 +509,6 @@ impl ProjectRepository for PostgresProjectRepository {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     // Note: Full integration tests should be in tests/ directory
     // using testcontainers for real database testing
 
