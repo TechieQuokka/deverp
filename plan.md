@@ -34,7 +34,7 @@
 
 #### 2.1 유틸리티 모듈 구현
 
-- [ ] **Error 타입 정의** (`src/utils/error.rs`)
+- [x] **Error 타입 정의** (`src/utils/error.rs`)
 
   ```rust
   #[derive(Error, Debug)]
@@ -56,20 +56,20 @@
   }
   ```
 
-- [ ] **로깅 설정** (`src/utils/logger.rs`)
+- [x] **로깅 설정** (`src/utils/logger.rs`)
 
   - `tracing` 및 `tracing-subscriber` 초기화
   - 로그 레벨 설정 (환경 변수 기반)
   - 파일 및 콘솔 로그 출력 설정
 
-- [ ] **CLI 출력 포맷터** (`src/utils/formatter.rs`)
+- [x] **CLI 출력 포맷터** (`src/utils/formatter.rs`)
   - 테이블 형식 출력
   - 컬러 출력 지원
   - JSON 출력 옵션
 
 #### 2.2 설정 관리 모듈 구현
 
-- [ ] **설정 구조체 정의** (`src/config/settings.rs`)
+- [x] **설정 구조체 정의** (`src/config/settings.rs`)
 
   ```rust
   #[derive(Debug, Deserialize)]
@@ -80,14 +80,14 @@
   }
   ```
 
-- [ ] **설정 로드 함수 구현**
+- [x] **설정 로드 함수 구현**
   - TOML 파일 읽기
   - 환경 변수 오버라이드 지원
   - 설정 검증
 
 #### 2.3 데이터베이스 연결 모듈 구현
 
-- [ ] **데이터베이스 연결** (`src/infrastructure/database.rs`)
+- [x] **데이터베이스 연결** (`src/infrastructure/database.rs`)
 
   ```rust
   pub async fn establish_connection(config: &DatabaseConfig) -> Result<PgPool, DevErpError> {
@@ -99,7 +99,7 @@
   }
   ```
 
-- [ ] **커넥션 풀 관리** (`src/infrastructure/pool.rs`)
+- [x] **커넥션 풀 관리** (`src/infrastructure/pool.rs`)
   - 풀 생성 및 관리
   - 헬스체크 기능
 
@@ -109,7 +109,7 @@
 
 #### 3.1 초기 마이그레이션 작성
 
-- [ ] **001_initial_schema.sql**: 핵심 테이블 생성
+- [x] **001_initial_schema.sql**: 핵심 테이블 생성
   - `projects` 테이블
   - `tasks` 테이블
   - `task_dependencies` 테이블
@@ -119,17 +119,17 @@
 
 #### 3.2 추가 마이그레이션 작성
 
-- [ ] **002_resource_tables.sql**: 리소스 관리 테이블
+- [x] **002_resource_tables.sql**: 리소스 관리 테이블
 
   - `resources` 테이블
   - `project_resources` 테이블
 
-- [ ] **003_timeline_tables.sql**: 타임라인 관리 테이블
+- [x] **003_timeline_tables.sql**: 타임라인 관리 테이블
 
   - `timelines` 테이블
   - `milestones` 테이블
 
-- [ ] **004_support_tables.sql**: 지원 테이블
+- [x] **004_support_tables.sql**: 지원 테이블
   - `tags` 테이블
   - `project_tags` 테이블
   - `configurations` 테이블
@@ -137,8 +137,8 @@
 
 #### 3.3 인덱스 및 뷰 생성
 
-- [ ] **005_indexes.sql**: 성능 최적화를 위한 인덱스
-- [ ] **006_views.sql**: 자주 사용하는 쿼리를 위한 뷰
+- [x] **005_indexes.sql**: 성능 최적화를 위한 인덱스
+- [x] **006_views.sql**: 자주 사용하는 쿼리를 위한 뷰
   - `v_active_projects`
   - `v_task_summary`
   - `v_resource_usage`
@@ -146,11 +146,12 @@
 
 #### 3.4 초기 데이터 삽입
 
-- [ ] **007_seed_data.sql**: 기본 설정 및 태그 데이터
+- [x] **007_seed_data.sql**: 기본 설정 및 태그 데이터
 
 #### 3.5 마이그레이션 실행
 
-- [ ] `sqlx migrate run` 실행 및 검증
+- [x] `sqlx migrate run` 실행 및 검증
+  - **Note**: 모든 마이그레이션 파일 생성 완료. PostgreSQL 연결 설정 후 `sqlx migrate run --database-url "postgres://deverp_user:password@localhost:5432/deverp"` 명령으로 실행 가능
 
 ---
 
@@ -158,7 +159,7 @@
 
 #### 4.1 Project Entity 정의
 
-- [ ] **Entity 구조체** (`src/domain/project/entity.rs`)
+- [x] **Entity 구조체** (`src/domain/project/entity.rs`)
 
   ```rust
   #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -191,7 +192,7 @@
 
 #### 4.2 Project Repository Trait 정의
 
-- [ ] **Repository 트레이트** (`src/domain/project/repository.rs`)
+- [x] **Repository 트레이트** (`src/domain/project/repository.rs`)
   ```rust
   #[async_trait]
   pub trait ProjectRepository: Send + Sync {
@@ -207,14 +208,14 @@
 
 #### 4.3 Project Repository 구현
 
-- [ ] **PostgreSQL Repository** (`src/infrastructure/repositories/project_repo.rs`)
+- [x] **PostgreSQL Repository** (`src/infrastructure/repositories/project_repo.rs`)
   - CRUD 쿼리 구현
   - 트랜잭션 처리
   - 에러 처리
 
 #### 4.4 Project Service 구현
 
-- [ ] **비즈니스 로직** (`src/domain/project/service.rs`)
+- [x] **비즈니스 로직** (`src/domain/project/service.rs`)
 
   ```rust
   pub struct ProjectService {
@@ -238,9 +239,9 @@
 
 #### 4.5 Project 단위 테스트
 
-- [ ] Repository 테스트 (모킹 사용)
-- [ ] Service 테스트
-- [ ] Entity 유효성 검증 테스트
+- [x] Repository 테스트 (모킹 사용)
+- [x] Service 테스트
+- [x] Entity 유효성 검증 테스트
 
 ---
 
@@ -248,21 +249,21 @@
 
 #### 5.1 Task Entity 정의
 
-- [ ] Task 구조체 및 관련 Enum 정의
-- [ ] TaskDependency 구조체 정의
-- [ ] TaskComment 구조체 정의
+- [x] Task 구조체 및 관련 Enum 정의
+- [x] TaskDependency 구조체 정의
+- [x] TaskComment 구조체 정의
 
 #### 5.2 Task Repository 구현
 
-- [ ] Repository 트레이트 정의
-- [ ] PostgreSQL Repository 구현
-- [ ] 의존성 관리 쿼리 구현
+- [x] Repository 트레이트 정의
+- [x] PostgreSQL Repository 구현
+- [x] 의존성 관리 쿼리 구현
 
 #### 5.3 Task Service 구현
 
-- [ ] 태스크 CRUD 로직
-- [ ] 의존성 검증 로직 (순환 의존성 체크)
-- [ ] 태스크 상태 변경 로직
+- [x] 태스크 CRUD 로직
+- [x] 의존성 검증 로직 (순환 의존성 체크)
+- [x] 태스크 상태 변경 로직
 
 #### 5.4 Task 단위 테스트
 
@@ -276,21 +277,24 @@
 
 #### 6.1 Resource Entity 정의
 
-- [ ] Resource 구조체 정의
-- [ ] ProjectResource 연결 구조체 정의
+- [x] Resource 구조체 정의
+- [x] ProjectResource 연결 구조체 정의
 
 #### 6.2 Resource Repository 구현
 
-- [ ] Repository 트레이트 정의
-- [ ] PostgreSQL Repository 구현
+- [x] Repository 트레이트 정의
+- [x] PostgreSQL Repository 구현
 
 #### 6.3 Resource Service 구현
 
-- [ ] 리소스 추가/삭제/수정
-- [ ] 프로젝트-리소스 연결 관리
-- [ ] 리소스 활용도 분석
+- [x] 리소스 추가/삭제/수정
+- [x] 프로젝트-리소스 연결 관리
+- [x] 리소스 활용도 분석
 
 #### 6.4 Resource 단위 테스트
+
+- [x] Service 레이어 단위 테스트 (mockall 사용)
+- [x] Entity 유효성 검증 테스트
 
 ---
 

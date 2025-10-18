@@ -1,3 +1,10 @@
-// Resource domain module - placeholder for Phase 6
+pub mod entity;
+pub mod repository;
+pub mod service;
 
-// This module will be implemented in Phase 6: Domain Layer - Resource Module
+pub use entity::{
+    CreateResource, LinkResourceToProject, ProjectResource, Resource, ResourceFilter,
+    ResourceStatus, ResourceType, ResourceUsageStats, UpdateProjectResource, UpdateResource,
+};
+pub use repository::ResourceRepository;
+pub use service::ResourceService;

@@ -1,0 +1,4 @@
+[env]
+# SQLX offline mode enabled - uses cached query metadata from .sqlx/ directory
+# Run `cargo sqlx prepare` after database schema changes to update the cache
+SQLX_OFFLINE = "true"

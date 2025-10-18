@@ -1,0 +1,104 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT\n                    id, uuid, name, description,\n                    resource_type as \"resource_type: _\",\n                    version, url, documentation_url, license,\n                    status as \"status: _\",\n                    metadata, tags,\n                    created_at, updated_at, deleted_at\n                FROM resources\n                WHERE deleted_at IS NULL\n                ORDER BY name ASC\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "resource_type: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "version",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "documentation_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "license",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "status: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 10,
+        "name": "metadata",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 11,
+        "name": "tags",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 12,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 13,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "183b89ed606be5071c883c02c7ff69e425e41c39d2b2c48483f44ec34e2769db"
+}

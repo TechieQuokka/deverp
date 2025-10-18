@@ -1,0 +1,106 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                r.id, r.uuid, r.name, r.description,\n                r.resource_type as \"resource_type: _\",\n                r.version, r.url, r.documentation_url, r.license,\n                r.status as \"status: _\",\n                r.metadata, r.tags,\n                r.created_at, r.updated_at, r.deleted_at\n            FROM resources r\n            INNER JOIN project_resources pr ON r.id = pr.resource_id\n            WHERE pr.project_id = $1\n              AND r.deleted_at IS NULL\n              AND pr.removed_at IS NULL\n            ORDER BY r.name ASC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "resource_type: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "version",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "documentation_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 8,
+        "name": "license",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "status: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 10,
+        "name": "metadata",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 11,
+        "name": "tags",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 12,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 13,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "7617da372c791a3148e8093d7b28c34ee89ae1de07089c5161345588f0fb978c"
+}

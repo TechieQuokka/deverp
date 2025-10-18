@@ -1,0 +1,44 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                r.id as resource_id,\n                r.name as resource_name,\n                r.resource_type as \"resource_type: _\",\n                COUNT(DISTINCT pr.project_id) as \"total_projects!\",\n                COUNT(DISTINCT CASE WHEN pr.is_critical = true THEN pr.project_id END) as \"critical_projects!\"\n            FROM resources r\n            LEFT JOIN project_resources pr ON r.id = pr.resource_id AND pr.removed_at IS NULL\n            WHERE r.deleted_at IS NULL\n            GROUP BY r.id, r.name, r.resource_type\n            ORDER BY COUNT(DISTINCT pr.project_id) DESC, r.name ASC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "resource_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "resource_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "resource_type: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "total_projects!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "critical_projects!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "18b61c9c68efe6160efdcd1b1d9b11917f09a6e65ed6e34ba144ffb32062724b"
+}

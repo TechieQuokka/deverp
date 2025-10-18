@@ -1,0 +1,130 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                id, uuid, name, description, code,\n                status as \"status: _\", priority as \"priority: _\",\n                start_date, end_date, actual_start_date, actual_end_date,\n                progress_percentage, repository_url, repository_branch,\n                tags, metadata,\n                created_at, updated_at, deleted_at\n            FROM projects\n            WHERE $1 = ANY(tags) AND deleted_at IS NULL\n            ORDER BY created_at DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "status: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "priority: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "start_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 8,
+        "name": "end_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 9,
+        "name": "actual_start_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 10,
+        "name": "actual_end_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 11,
+        "name": "progress_percentage",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 12,
+        "name": "repository_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "repository_branch",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 14,
+        "name": "tags",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 15,
+        "name": "metadata",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 16,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 17,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 18,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "e53a7024ce75e133439a8c9a9ba5c3ed98f76f6c3693124a352f3f103ae4be25"
+}

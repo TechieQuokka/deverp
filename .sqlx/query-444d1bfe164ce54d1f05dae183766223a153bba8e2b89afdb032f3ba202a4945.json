@@ -1,0 +1,147 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO tasks (\n                project_id, parent_task_id, title, description, task_number,\n                status, priority, assigned_to, estimated_hours, due_date, task_type, tags\n            )\n            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)\n            RETURNING\n                id, uuid, project_id, parent_task_id, title, description, task_number,\n                status as \"status: _\", priority as \"priority: _\", assigned_to,\n                estimated_hours, actual_hours, due_date, started_at, completed_at,\n                task_type as \"task_type: _\", tags, created_at, updated_at, deleted_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "project_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "parent_task_id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 4,
+        "name": "title",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "task_number",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "status: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "priority: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "assigned_to",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 10,
+        "name": "estimated_hours",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 11,
+        "name": "actual_hours",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 12,
+        "name": "due_date",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 13,
+        "name": "started_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "completed_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 15,
+        "name": "task_type: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 16,
+        "name": "tags",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 17,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 18,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 19,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8",
+        "Varchar",
+        "Text",
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Float8",
+        "Timestamptz",
+        "Varchar",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "444d1bfe164ce54d1f05dae183766223a153bba8e2b89afdb032f3ba202a4945"
+}

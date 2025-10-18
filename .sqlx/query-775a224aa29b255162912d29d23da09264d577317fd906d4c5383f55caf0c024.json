@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            DELETE FROM task_dependencies\n            WHERE task_id = $1 AND depends_on_task_id = $2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "775a224aa29b255162912d29d23da09264d577317fd906d4c5383f55caf0c024"
+}

@@ -1,3 +1,13 @@
-// Task domain module - placeholder for Phase 5
+// Task domain module
 
-// This module will be implemented in Phase 5: Domain Layer - Task Module
+pub mod entity;
+pub mod repository;
+pub mod service;
+
+// Re-export commonly used types
+pub use entity::{
+    CreateTask, CreateTaskComment, CreateTaskDependency, DependencyType, Task, TaskComment,
+    TaskDependency, TaskFilter, TaskPriority, TaskStatus, TaskType, UpdateTask,
+};
+pub use repository::{TaskCommentRepository, TaskDependencyRepository, TaskRepository};
+pub use service::TaskService;

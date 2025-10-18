@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE project_resources\n            SET removed_at = NOW()\n            WHERE project_id = $1 AND resource_id = $2 AND removed_at IS NULL\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int8",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cc288992142727b7f2aaa3b3d91da6e0be460cffb8816b61b8c67e212d29a947"
+}

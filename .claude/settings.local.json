@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sqlx --version)",
+      "Bash(cargo sqlx prepare)",
+      "Bash(cat Cargo.toml)",
+      "Bash(sqlx migrate add alter_task_hours_to_double_precision)",
+      "Bash(sqlx migrate run)",
+      "Bash(cargo fix --lib -p deverp --allow-dirty)",
+      "Bash(git add -A)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

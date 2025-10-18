@@ -1,0 +1,140 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO projects (\n                name, description, code, status, priority,\n                start_date, end_date, repository_url, repository_branch,\n                tags, metadata\n            )\n            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)\n            RETURNING\n                id, uuid, name, description, code,\n                status as \"status: _\", priority as \"priority: _\",\n                start_date, end_date, actual_start_date, actual_end_date,\n                progress_percentage, repository_url, repository_branch,\n                tags, metadata,\n                created_at, updated_at, deleted_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "code",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "status: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "priority: _",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "start_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 8,
+        "name": "end_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 9,
+        "name": "actual_start_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 10,
+        "name": "actual_end_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 11,
+        "name": "progress_percentage",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 12,
+        "name": "repository_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "repository_branch",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 14,
+        "name": "tags",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 15,
+        "name": "metadata",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 16,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 17,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 18,
+        "name": "deleted_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Text",
+        "Varchar",
+        "Varchar",
+        "Varchar",
+        "Date",
+        "Date",
+        "Text",
+        "Varchar",
+        "TextArray",
+        "Jsonb"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "442caaead39dbe4f79f19c8153dcc5ee28c5f99284161971f9f6842e99a2a7e6"
+}
