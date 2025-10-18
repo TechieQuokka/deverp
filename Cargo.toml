@@ -1,0 +1,58 @@
+[package]
+name = "deverp"
+version = "0.1.0"
+edition = "2021"
+authors = ["DevERP Team"]
+description = "IT Development Project Management ERP System"
+license = "MIT"
+
+[dependencies]
+# CLI Framework
+clap = { version = "4.5", features = ["derive"] }
+
+# Async Runtime
+tokio = { version = "1.40", features = ["full"] }
+
+# Database
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-native-tls", "chrono", "uuid", "migrate"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error Handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Date/Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID
+uuid = { version = "1.10", features = ["v4", "serde"] }
+
+# Terminal Output
+colored = "2.1"
+
+# Configuration
+config = "0.14"
+
+# Async trait support
+async-trait = "0.1"
+
+[dev-dependencies]
+# Testing
+tokio-test = "0.4"
+mockall = "0.13"
+
+# Test Database
+testcontainers = "0.20"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

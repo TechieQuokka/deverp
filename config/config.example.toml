@@ -1,0 +1,19 @@
+# DevERP Configuration Example
+# Copy this file to config/local.toml and customize for your environment
+
+[database]
+host = "localhost"
+port = 5432
+name = "deverp"
+user = "deverp_user"
+password = "your_password_here"
+max_connections = 5
+
+[logging]
+level = "info"
+# Uncomment to enable file logging
+# file = "deverp.log"
+
+[application]
+default_project_status = "planning"
+date_format = "%Y-%m-%d"

@@ -1,0 +1,17 @@
+# DevERP Default Configuration
+
+[database]
+host = "localhost"
+port = 5432
+name = "deverp"
+user = "deverp_user"
+password = "2147483647"
+max_connections = 5
+
+[logging]
+level = "info"
+# file = "deverp.log"  # Uncomment to enable file logging
+
+[application]
+default_project_status = "planning"
+date_format = "%Y-%m-%d"
