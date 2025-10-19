@@ -1,60 +1,34 @@
 // CLI Interface Layer
 
-use clap::{Parser, Subcommand};
+pub mod commands;
+pub mod output;
+
+// Command handlers
+pub mod project;
+pub mod task;
+pub mod resource;
+pub mod timeline;
+pub mod report;
+pub mod config;
+
+pub use commands::Cli;
+use commands::Commands;
 use crate::Result;
 
-#[derive(Parser)]
-#[command(name = "deverp")]
-#[command(about = "DevERP - IT Development Project Management ERP System", long_about = None)]
-#[command(version)]
-pub struct Cli {
-    #[command(subcommand)]
-    command: Commands,
-}
-
-#[derive(Subcommand)]
-enum Commands {
-    /// Project management operations
-    Project,
-    /// Task management operations
-    Task,
-    /// Resource tracking and allocation
-    Resource,
-    /// Timeline and scheduling management
-    Timeline,
-    /// Report generation and analytics
-    Report,
-    /// System configuration
-    Config,
-}
-
 impl Cli {
+    /// Execute the CLI command
     pub async fn execute(&self) -> Result<()> {
         match &self.command {
-            Commands::Project => {
-                println!("Project command - Not yet implemented");
-                Ok(())
-            }
-            Commands::Task => {
-                println!("Task command - Not yet implemented");
-                Ok(())
-            }
-            Commands::Resource => {
-                println!("Resource command - Not yet implemented");
-                Ok(())
-            }
-            Commands::Timeline => {
-                println!("Timeline command - Not yet implemented");
-                Ok(())
-            }
-            Commands::Report => {
-                println!("Report command - Not yet implemented");
-                Ok(())
-            }
-            Commands::Config => {
-                println!("Config command - Not yet implemented");
-                Ok(())
-            }
+            Commands::Project(cmd) => project::handle(cmd.clone()).await,
+            Commands::Task(cmd) => task::handle(cmd.clone()).await,
+            Commands::Resource(cmd) => resource::handle(cmd.clone()).await,
+            Commands::Timeline(cmd) => timeline::handle(cmd.clone()).await,
+            Commands::Report(cmd) => report::handle(cmd.clone()).await,
+            Commands::Config(cmd) => config::handle(cmd.clone()).await,
         }
     }
 }
+
+// Re-export commonly used types
+pub use commands::{OutputFormat, PaginationOptions};
+pub use output::{OutputManager, PaginatedOutput};

@@ -327,7 +327,7 @@
 
 #### 8.1 CLI 커맨드 구조 정의
 
-- [ ] **메인 커맨드 정의** (`src/cli/commands.rs`)
+- [x] **메인 커맨드 정의** (`src/cli/commands.rs`)
 
   ```rust
   #[derive(Parser)]
@@ -351,9 +351,9 @@
 
 #### 8.2 공통 CLI 유틸리티
 
-- [ ] 출력 포맷 선택 (table, json, yaml)
-- [ ] 페이지네이션 지원
-- [ ] 에러 메시지 포맷팅
+- [x] 출력 포맷 선택 (table, json, plain)
+- [x] 페이지네이션 지원
+- [x] 에러 메시지 포맷팅 (formatter.rs 활용)
 
 ---
 
@@ -361,7 +361,7 @@
 
 #### 9.1 Project 커맨드 정의
 
-- [ ] **프로젝트 커맨드** (`src/cli/project.rs`)
+- [x] **프로젝트 커맨드** (`src/cli/project.rs`)
   ```rust
   #[derive(Subcommand)]
   pub enum ProjectCommand {
@@ -376,37 +376,37 @@
 
 #### 9.2 각 서브커맨드 구현
 
-- [ ] `create`: 새 프로젝트 생성
+- [x] `create`: 새 프로젝트 생성
 
   ```bash
   deverp project create --name "My Project" --description "..." --priority high
   ```
 
-- [ ] `list`: 프로젝트 목록 조회
+- [x] `list`: 프로젝트 목록 조회
 
   ```bash
   deverp project list --status active --format table
   ```
 
-- [ ] `show`: 프로젝트 상세 조회
+- [x] `show`: 프로젝트 상세 조회
 
   ```bash
   deverp project show <id or uuid>
   ```
 
-- [ ] `update`: 프로젝트 수정
+- [x] `update`: 프로젝트 수정
 
   ```bash
   deverp project update <id> --status completed --progress 100
   ```
 
-- [ ] `delete`: 프로젝트 삭제 (soft delete)
+- [x] `delete`: 프로젝트 삭제 (soft delete)
 
   ```bash
   deverp project delete <id> --confirm
   ```
 
-- [ ] `archive`: 프로젝트 아카이빙
+- [x] `archive`: 프로젝트 아카이빙
   ```bash
   deverp project archive <id>
   ```
@@ -421,7 +421,7 @@
 
 #### 10.1 Task 커맨드 정의
 
-- [ ] **태스크 커맨드** (`src/cli/task.rs`)
+- [x] **태스크 커맨드** (`src/cli/task.rs`)
   ```rust
   #[derive(Subcommand)]
   pub enum TaskCommand {
@@ -438,14 +438,14 @@
 
 #### 10.2 각 서브커맨드 구현
 
-- [ ] `create`: 새 태스크 생성
-- [ ] `list`: 태스크 목록 조회 (프로젝트별, 상태별 필터링)
-- [ ] `show`: 태스크 상세 조회
-- [ ] `update`: 태스크 수정
-- [ ] `delete`: 태스크 삭제
-- [ ] `add-dependency`: 태스크 의존성 추가
-- [ ] `remove-dependency`: 태스크 의존성 제거
-- [ ] `add-comment`: 태스크 코멘트 추가
+- [x] `create`: 새 태스크 생성
+- [x] `list`: 태스크 목록 조회 (프로젝트별, 상태별 필터링)
+- [x] `show`: 태스크 상세 조회
+- [x] `update`: 태스크 수정
+- [x] `delete`: 태스크 삭제
+- [x] `add-dependency`: 태스크 의존성 추가
+- [x] `remove-dependency`: 태스크 의존성 제거
+- [x] `add-comment`: 태스크 코멘트 추가
 
 #### 10.3 Task CLI 테스트
 
