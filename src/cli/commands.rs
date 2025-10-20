@@ -456,42 +456,381 @@ pub struct AddCommentArgs {
 #[derive(Subcommand, Clone)]
 pub enum ResourceCommand {
     /// Create a new resource
-    Create,
+    Create(CreateResourceArgs),
     /// List resources
-    List,
+    List(ListResourceArgs),
     /// Show resource details
-    Show,
+    Show(ShowResourceArgs),
     /// Update a resource
-    Update,
+    Update(UpdateResourceArgs),
     /// Delete a resource
-    Delete,
+    Delete(DeleteResourceArgs),
     /// Link resource to project
-    Link,
+    Link(LinkResourceArgs),
     /// Unlink resource from project
-    Unlink,
+    Unlink(UnlinkResourceArgs),
     /// Show resource usage statistics
-    Usage,
+    Usage(UsageResourceArgs),
+}
+
+/// Arguments for creating a new resource
+#[derive(Parser, Clone, Debug)]
+pub struct CreateResourceArgs {
+    /// Resource name
+    #[arg(short, long)]
+    pub name: String,
+
+    /// Resource description
+    #[arg(short, long)]
+    pub description: Option<String>,
+
+    /// Resource type (library, api, tool, service, documentation, other)
+    #[arg(short = 't', long)]
+    pub resource_type: String,
+
+    /// Version
+    #[arg(short, long)]
+    pub version: Option<String>,
+
+    /// Resource URL
+    #[arg(short, long)]
+    pub url: Option<String>,
+
+    /// Documentation URL
+    #[arg(long)]
+    pub documentation_url: Option<String>,
+
+    /// License
+    #[arg(short, long)]
+    pub license: Option<String>,
+
+    /// Status (active, deprecated, archived)
+    #[arg(short, long)]
+    pub status: Option<String>,
+
+    /// Tags (comma-separated)
+    #[arg(long)]
+    pub tags: Option<String>,
+}
+
+/// Arguments for listing resources
+#[derive(Parser, Clone, Debug)]
+pub struct ListResourceArgs {
+    /// Filter by resource type
+    #[arg(short = 't', long)]
+    pub resource_type: Option<String>,
+
+    /// Filter by status
+    #[arg(short, long)]
+    pub status: Option<String>,
+
+    /// Search by name
+    #[arg(short = 'q', long)]
+    pub search: Option<String>,
+
+    /// Filter by tags (comma-separated)
+    #[arg(long)]
+    pub tags: Option<String>,
+
+    /// Pagination options
+    #[command(flatten)]
+    pub pagination: PaginationOptions,
+}
+
+/// Arguments for showing resource details
+#[derive(Parser, Clone, Debug)]
+pub struct ShowResourceArgs {
+    /// Resource ID or UUID
+    pub identifier: String,
+}
+
+/// Arguments for updating a resource
+#[derive(Parser, Clone, Debug)]
+pub struct UpdateResourceArgs {
+    /// Resource ID or UUID
+    pub identifier: String,
+
+    /// New resource name
+    #[arg(short, long)]
+    pub name: Option<String>,
+
+    /// New resource description
+    #[arg(short, long)]
+    pub description: Option<String>,
+
+    /// New resource type
+    #[arg(short = 't', long)]
+    pub resource_type: Option<String>,
+
+    /// New version
+    #[arg(short, long)]
+    pub version: Option<String>,
+
+    /// New resource URL
+    #[arg(short, long)]
+    pub url: Option<String>,
+
+    /// New documentation URL
+    #[arg(long)]
+    pub documentation_url: Option<String>,
+
+    /// New license
+    #[arg(short, long)]
+    pub license: Option<String>,
+
+    /// New status
+    #[arg(short, long)]
+    pub status: Option<String>,
+
+    /// New tags (comma-separated)
+    #[arg(long)]
+    pub tags: Option<String>,
+}
+
+/// Arguments for deleting a resource
+#[derive(Parser, Clone, Debug)]
+pub struct DeleteResourceArgs {
+    /// Resource ID or UUID
+    pub identifier: String,
+
+    /// Confirm deletion without prompt
+    #[arg(long)]
+    pub confirm: bool,
+}
+
+/// Arguments for linking a resource to a project
+#[derive(Parser, Clone, Debug)]
+pub struct LinkResourceArgs {
+    /// Project ID
+    #[arg(long)]
+    pub project_id: i64,
+
+    /// Resource ID
+    #[arg(long)]
+    pub resource_id: i64,
+
+    /// Usage notes
+    #[arg(long)]
+    pub usage_notes: Option<String>,
+
+    /// Version used in this project
+    #[arg(long)]
+    pub version_used: Option<String>,
+
+    /// Mark as critical for this project
+    #[arg(long)]
+    pub is_critical: bool,
+}
+
+/// Arguments for unlinking a resource from a project
+#[derive(Parser, Clone, Debug)]
+pub struct UnlinkResourceArgs {
+    /// Project ID
+    #[arg(long)]
+    pub project_id: i64,
+
+    /// Resource ID
+    #[arg(long)]
+    pub resource_id: i64,
+}
+
+/// Arguments for showing resource usage
+#[derive(Parser, Clone, Debug)]
+pub struct UsageResourceArgs {
+    /// Resource ID (optional, if not provided shows all resources)
+    pub resource_id: Option<i64>,
 }
 
 /// Timeline management subcommands
 #[derive(Subcommand, Clone)]
 pub enum TimelineCommand {
     /// Create a new timeline
-    Create,
+    Create(CreateTimelineArgs),
     /// List timelines
-    List,
+    List(ListTimelineArgs),
     /// Show timeline details
-    Show,
+    Show(ShowTimelineArgs),
     /// Update a timeline
-    Update,
+    Update(UpdateTimelineArgs),
     /// Delete a timeline
-    Delete,
+    Delete(DeleteTimelineArgs),
     /// Add milestone
-    AddMilestone,
+    AddMilestone(AddMilestoneArgs),
     /// Update milestone
-    UpdateMilestone,
+    UpdateMilestone(UpdateMilestoneArgs),
     /// Complete milestone
-    CompleteMilestone,
+    CompleteMilestone(CompleteMilestoneArgs),
+}
+
+/// Arguments for creating a new timeline
+#[derive(Parser, Clone, Debug)]
+pub struct CreateTimelineArgs {
+    /// Project ID
+    #[arg(long)]
+    pub project_id: i64,
+
+    /// Timeline name
+    #[arg(short, long)]
+    pub name: String,
+
+    /// Timeline description
+    #[arg(short, long)]
+    pub description: Option<String>,
+
+    /// Timeline type (project, sprint, release, phase)
+    #[arg(short = 't', long, default_value = "project")]
+    pub timeline_type: String,
+
+    /// Start date (YYYY-MM-DD)
+    #[arg(long)]
+    pub start_date: String,
+
+    /// End date (YYYY-MM-DD)
+    #[arg(long)]
+    pub end_date: String,
+
+    /// Status (planned, active, completed, cancelled)
+    #[arg(short, long)]
+    pub status: Option<String>,
+}
+
+/// Arguments for listing timelines
+#[derive(Parser, Clone, Debug)]
+pub struct ListTimelineArgs {
+    /// Filter by project ID
+    #[arg(long)]
+    pub project_id: Option<i64>,
+
+    /// Filter by timeline type
+    #[arg(short = 't', long)]
+    pub timeline_type: Option<String>,
+
+    /// Filter by status
+    #[arg(short, long)]
+    pub status: Option<String>,
+
+    /// Pagination options
+    #[command(flatten)]
+    pub pagination: PaginationOptions,
+}
+
+/// Arguments for showing timeline details
+#[derive(Parser, Clone, Debug)]
+pub struct ShowTimelineArgs {
+    /// Timeline ID
+    pub id: i64,
+}
+
+/// Arguments for updating a timeline
+#[derive(Parser, Clone, Debug)]
+pub struct UpdateTimelineArgs {
+    /// Timeline ID
+    pub id: i64,
+
+    /// New timeline name
+    #[arg(short, long)]
+    pub name: Option<String>,
+
+    /// New timeline description
+    #[arg(short, long)]
+    pub description: Option<String>,
+
+    /// New timeline type
+    #[arg(short = 't', long)]
+    pub timeline_type: Option<String>,
+
+    /// New start date (YYYY-MM-DD)
+    #[arg(long)]
+    pub start_date: Option<String>,
+
+    /// New end date (YYYY-MM-DD)
+    #[arg(long)]
+    pub end_date: Option<String>,
+
+    /// New status
+    #[arg(short, long)]
+    pub status: Option<String>,
+}
+
+/// Arguments for deleting a timeline
+#[derive(Parser, Clone, Debug)]
+pub struct DeleteTimelineArgs {
+    /// Timeline ID
+    pub id: i64,
+
+    /// Confirm deletion without prompt
+    #[arg(long)]
+    pub confirm: bool,
+}
+
+/// Arguments for adding a milestone
+#[derive(Parser, Clone, Debug)]
+pub struct AddMilestoneArgs {
+    /// Timeline ID
+    #[arg(long)]
+    pub timeline_id: i64,
+
+    /// Project ID
+    #[arg(long)]
+    pub project_id: i64,
+
+    /// Milestone name
+    #[arg(short, long)]
+    pub name: String,
+
+    /// Milestone description
+    #[arg(short, long)]
+    pub description: Option<String>,
+
+    /// Target date (YYYY-MM-DD)
+    #[arg(long)]
+    pub target_date: String,
+
+    /// Status (pending, in_progress, completed, missed, cancelled)
+    #[arg(short, long)]
+    pub status: Option<String>,
+}
+
+/// Arguments for updating a milestone
+#[derive(Parser, Clone, Debug)]
+pub struct UpdateMilestoneArgs {
+    /// Milestone ID
+    pub id: i64,
+
+    /// New milestone name
+    #[arg(short, long)]
+    pub name: Option<String>,
+
+    /// New milestone description
+    #[arg(short, long)]
+    pub description: Option<String>,
+
+    /// New target date (YYYY-MM-DD)
+    #[arg(long)]
+    pub target_date: Option<String>,
+
+    /// New actual date (YYYY-MM-DD)
+    #[arg(long)]
+    pub actual_date: Option<String>,
+
+    /// New status
+    #[arg(short, long)]
+    pub status: Option<String>,
+
+    /// New completion percentage (0-100)
+    #[arg(long)]
+    pub completion_percentage: Option<i32>,
+}
+
+/// Arguments for completing a milestone
+#[derive(Parser, Clone, Debug)]
+pub struct CompleteMilestoneArgs {
+    /// Milestone ID
+    pub id: i64,
+
+    /// Actual completion date (YYYY-MM-DD), defaults to today
+    #[arg(long)]
+    pub actual_date: Option<String>,
 }
 
 /// Report generation subcommands

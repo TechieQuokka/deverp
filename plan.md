@@ -455,17 +455,17 @@
 
 #### 11.1 Resource 커맨드 구현
 
-- [ ] `create`, `list`, `show`, `update`, `delete`
-- [ ] `link`: 프로젝트에 리소스 연결
-- [ ] `unlink`: 프로젝트에서 리소스 연결 해제
-- [ ] `usage`: 리소스 활용도 조회
+- [x] `create`, `list`, `show`, `update`, `delete`
+- [x] `link`: 프로젝트에 리소스 연결
+- [x] `unlink`: 프로젝트에서 리소스 연결 해제
+- [x] `usage`: 리소스 활용도 조회
 
 #### 11.2 Timeline 커맨드 구현
 
-- [ ] `create`, `list`, `show`, `update`, `delete`
-- [ ] `add-milestone`: 마일스톤 추가
-- [ ] `update-milestone`: 마일스톤 수정
-- [ ] `complete-milestone`: 마일스톤 완료 처리
+- [x] `create`, `list`, `show`, `update`, `delete`
+- [x] `add-milestone`: 마일스톤 추가
+- [x] `update-milestone`: 마일스톤 수정
+- [x] `complete-milestone`: 마일스톤 완료 처리
 
 ---
 
