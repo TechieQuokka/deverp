@@ -851,14 +851,34 @@ pub enum ReportCommand {
 /// Configuration subcommands
 #[derive(Subcommand, Clone)]
 pub enum ConfigCommand {
-    /// Show current configuration
-    Show,
-    /// Set configuration value
-    Set,
-    /// Reset to default configuration
-    Reset,
+    /// Show all configurations or a specific configuration
+    Show {
+        /// Configuration key to show (optional, shows all if not provided)
+        #[arg(short, long)]
+        key: Option<String>,
+    },
+    /// Set a configuration value
+    Set {
+        /// Configuration key
+        key: String,
+        /// Configuration value
+        value: String,
+        /// Optional description
+        #[arg(short, long)]
+        description: Option<String>,
+    },
+    /// Reset all configurations to default values
+    Reset {
+        /// Confirm reset (required to prevent accidental resets)
+        #[arg(short, long)]
+        confirm: bool,
+    },
     /// Test database connection
-    TestDb,
+    TestDb {
+        /// Show detailed database information
+        #[arg(short, long)]
+        verbose: bool,
+    },
 }
 
 /// Common pagination options

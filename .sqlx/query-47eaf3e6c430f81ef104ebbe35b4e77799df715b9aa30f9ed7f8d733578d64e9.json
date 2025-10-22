@@ -1,0 +1,72 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE configurations\n            SET\n                config_value = $2,\n                description = COALESCE($3, description),\n                updated_at = CURRENT_TIMESTAMP\n            WHERE config_key = $1\n            RETURNING\n                id,\n                config_key,\n                config_value,\n                description,\n                data_type as \"data_type!: ConfigDataType\",\n                is_encrypted as \"is_encrypted!: bool\",\n                is_required as \"is_required!: bool\",\n                created_at,\n                updated_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "config_key",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "config_value",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "data_type!: ConfigDataType",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "is_encrypted!: bool",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_required!: bool",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "47eaf3e6c430f81ef104ebbe35b4e77799df715b9aa30f9ed7f8d733578d64e9"
+}

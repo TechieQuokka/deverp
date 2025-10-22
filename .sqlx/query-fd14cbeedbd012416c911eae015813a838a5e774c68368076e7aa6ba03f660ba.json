@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO configurations (config_key, config_value, description, data_type) VALUES\n            ('default_project_status', 'planning', 'Default status for new projects', 'string'),\n            ('default_task_status', 'todo', 'Default status for new tasks', 'string'),\n            ('date_format', '%Y-%m-%d', 'Default date format', 'string'),\n            ('enable_audit_log', 'true', 'Enable audit logging', 'boolean')\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "fd14cbeedbd012416c911eae015813a838a5e774c68368076e7aa6ba03f660ba"
+}

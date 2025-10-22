@@ -15,7 +15,9 @@
       "Bash(cargo sqlx prepare --lib -p deverp)",
       "Bash(cargo build --lib)",
       "mcp__sequential-thinking__sequentialthinking",
-      "Bash(cargo check)"
+      "Bash(cargo check)",
+      "Bash(git add:*)",
+      "Bash(cargo sqlx prepare:*)"
     ],
     "deny": [],
     "ask": []
