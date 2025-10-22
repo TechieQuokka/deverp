@@ -17,7 +17,8 @@
       "mcp__sequential-thinking__sequentialthinking",
       "Bash(cargo check)",
       "Bash(git add:*)",
-      "Bash(cargo sqlx prepare:*)"
+      "Bash(cargo sqlx prepare:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
