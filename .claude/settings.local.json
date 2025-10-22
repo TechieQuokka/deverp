@@ -18,7 +18,11 @@
       "Bash(cargo check)",
       "Bash(git add:*)",
       "Bash(cargo sqlx prepare:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(mkdir:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo build:*)",
+      "Bash(cargo check:*)"
     ],
     "deny": [],
     "ask": []
