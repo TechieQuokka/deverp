@@ -7,7 +7,7 @@ use colored::Colorize;
 use super::commands::{
     TimelineCommand, CreateTimelineArgs, ListTimelineArgs, ShowTimelineArgs,
     UpdateTimelineArgs, DeleteTimelineArgs, AddMilestoneArgs, UpdateMilestoneArgs,
-    CompleteMilestoneArgs,
+    CompleteMilestoneArgs, OutputFormat,
 };
 use super::output::{section_title, summary_line, confirm, empty_state};
 use crate::config::settings::Settings;
@@ -26,7 +26,7 @@ use crate::utils::error::DevErpError;
 use crate::Result;
 
 /// Handle timeline commands
-pub async fn handle(command: TimelineCommand) -> Result<()> {
+pub async fn handle(command: TimelineCommand, _format: OutputFormat) -> Result<()> {
     match command {
         TimelineCommand::Create(args) => handle_create(args).await,
         TimelineCommand::List(args) => handle_list(args).await,

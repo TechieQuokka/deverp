@@ -7,7 +7,7 @@ use uuid::Uuid;
 use super::commands::{
     ResourceCommand, CreateResourceArgs, ListResourceArgs, ShowResourceArgs,
     UpdateResourceArgs, DeleteResourceArgs, LinkResourceArgs, UnlinkResourceArgs,
-    UsageResourceArgs,
+    UsageResourceArgs, OutputFormat,
 };
 use super::output::{section_title, summary_line, confirm, empty_state};
 use crate::config::settings::Settings;
@@ -20,7 +20,7 @@ use crate::utils::error::DevErpError;
 use crate::Result;
 
 /// Handle resource commands
-pub async fn handle(command: ResourceCommand) -> Result<()> {
+pub async fn handle(command: ResourceCommand, _format: OutputFormat) -> Result<()> {
     match command {
         ResourceCommand::Create(args) => handle_create(args).await,
         ResourceCommand::List(args) => handle_list(args).await,

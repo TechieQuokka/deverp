@@ -8,7 +8,7 @@ use uuid::Uuid;
 use super::commands::{
     TaskCommand, CreateTaskArgs, ListTaskArgs, ShowTaskArgs,
     UpdateTaskArgs, DeleteTaskArgs, AddDependencyArgs,
-    RemoveDependencyArgs, AddCommentArgs,
+    RemoveDependencyArgs, AddCommentArgs, OutputFormat,
 };
 use super::output::{PaginatedOutput, section_title, summary_line, confirm, empty_state};
 use crate::config::settings::Settings;
@@ -28,7 +28,7 @@ use crate::utils::error::DevErpError;
 use crate::Result;
 
 /// Handle task commands
-pub async fn handle(command: TaskCommand) -> Result<()> {
+pub async fn handle(command: TaskCommand, _format: OutputFormat) -> Result<()> {
     match command {
         TaskCommand::Create(args) => handle_create(args).await,
         TaskCommand::List(args) => handle_list(args).await,

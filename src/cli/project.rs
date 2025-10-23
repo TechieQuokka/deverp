@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use super::commands::{
     ProjectCommand, CreateProjectArgs, ListProjectArgs, ShowProjectArgs,
-    UpdateProjectArgs, DeleteProjectArgs, ArchiveProjectArgs,
+    UpdateProjectArgs, DeleteProjectArgs, ArchiveProjectArgs, OutputFormat,
 };
 use super::output::{PaginatedOutput, section_title, summary_line, confirm, empty_state};
 use crate::config::settings::Settings;
@@ -17,17 +17,18 @@ use crate::domain::project::{
 };
 use crate::infrastructure::{database, repositories::project_repo::PostgresProjectRepository};
 use crate::utils::error::DevErpError;
+use crate::utils::formatter;
 use crate::Result;
 
 /// Handle project commands
-pub async fn handle(command: ProjectCommand) -> Result<()> {
+pub async fn handle(command: ProjectCommand, format: OutputFormat) -> Result<()> {
     match command {
-        ProjectCommand::Create(args) => handle_create(args).await,
-        ProjectCommand::List(args) => handle_list(args).await,
-        ProjectCommand::Show(args) => handle_show(args).await,
-        ProjectCommand::Update(args) => handle_update(args).await,
-        ProjectCommand::Delete(args) => handle_delete(args).await,
-        ProjectCommand::Archive(args) => handle_archive(args).await,
+        ProjectCommand::Create(args) => handle_create(args, format).await,
+        ProjectCommand::List(args) => handle_list(args, format).await,
+        ProjectCommand::Show(args) => handle_show(args, format).await,
+        ProjectCommand::Update(args) => handle_update(args, format).await,
+        ProjectCommand::Delete(args) => handle_delete(args, format).await,
+        ProjectCommand::Archive(args) => handle_archive(args, format).await,
     }
 }
 
@@ -40,7 +41,7 @@ async fn create_service() -> Result<ProjectService> {
 }
 
 /// Handle project create command
-async fn handle_create(args: CreateProjectArgs) -> Result<()> {
+async fn handle_create(args: CreateProjectArgs, _format: OutputFormat) -> Result<()> {
     let service = create_service().await?;
 
     // Parse status if provided
@@ -124,7 +125,7 @@ async fn handle_create(args: CreateProjectArgs) -> Result<()> {
 }
 
 /// Handle project list command
-async fn handle_list(args: ListProjectArgs) -> Result<()> {
+async fn handle_list(args: ListProjectArgs, format: OutputFormat) -> Result<()> {
     let service = create_service().await?;
 
     // Parse status filter if provided
@@ -164,10 +165,18 @@ async fn handle_list(args: ListProjectArgs) -> Result<()> {
     // Get projects
     let projects = service.list_projects(filter).await?;
 
-    // Display results
-    if projects.is_empty() {
-        empty_state("projects");
-        return Ok(());
+    // Display results based on format
+    match format {
+        OutputFormat::Json => {
+            return formatter::output_json(&projects);
+        }
+        _ => {
+            // Table/Plain format
+            if projects.is_empty() {
+                empty_state("projects");
+                return Ok(());
+            }
+        }
     }
 
     section_title(&format!("Projects ({} found)", projects.len()));
@@ -183,18 +192,74 @@ async fn handle_list(args: ListProjectArgs) -> Result<()> {
             project.id.to_string().yellow(),
             project.uuid.to_string().dimmed()
         );
+
+        if let Some(ref code) = project.code {
+            println!("    Code: {}", code.cyan());
+        }
+
         if let Some(ref desc) = project.description {
-            let short_desc = if desc.len() > 80 {
-                format!("{}...", &desc[..77])
+            let short_desc = if desc.len() > 100 {
+                format!("{}...", &desc[..97])
             } else {
                 desc.clone()
             };
             println!("    {}", short_desc.dimmed());
         }
+
         println!("    Priority: {} | Progress: {}%",
             project.priority.to_string().cyan(),
             project.progress_percentage.unwrap_or(0)
         );
+
+        // Display dates if available
+        if let Some(start_date) = project.start_date {
+            print!("    ");
+            if let Some(end_date) = project.end_date {
+                println!("Period: {} → {}",
+                    start_date.format("%Y-%m-%d").to_string().green(),
+                    end_date.format("%Y-%m-%d").to_string().green()
+                );
+            } else {
+                println!("Start: {}", start_date.format("%Y-%m-%d").to_string().green());
+            }
+        }
+
+        // Display actual dates if available
+        if project.actual_start_date.is_some() || project.actual_end_date.is_some() {
+            print!("    Actual: ");
+            if let Some(actual_start) = project.actual_start_date {
+                print!("{}", actual_start.format("%Y-%m-%d").to_string().yellow());
+                if let Some(actual_end) = project.actual_end_date {
+                    print!(" → {}", actual_end.format("%Y-%m-%d").to_string().yellow());
+                }
+            } else if let Some(actual_end) = project.actual_end_date {
+                print!("End: {}", actual_end.format("%Y-%m-%d").to_string().yellow());
+            }
+            println!();
+        }
+
+        // Display repository info if available
+        if let Some(ref repo_url) = project.repository_url {
+            print!("    Repository: {}", repo_url.blue());
+            if let Some(ref branch) = project.repository_branch {
+                print!(" ({})", branch.cyan());
+            }
+            println!();
+        }
+
+        // Display tags if available
+        if let Some(ref tags) = project.tags {
+            if !tags.is_empty() {
+                println!("    Tags: {}",
+                    tags.iter()
+                        .map(|t| format!("#{}", t))
+                        .collect::<Vec<_>>()
+                        .join(" ")
+                        .magenta()
+                );
+            }
+        }
+
         println!();
     }
 
@@ -206,7 +271,7 @@ async fn handle_list(args: ListProjectArgs) -> Result<()> {
 }
 
 /// Handle project show command
-async fn handle_show(args: ShowProjectArgs) -> Result<()> {
+async fn handle_show(args: ShowProjectArgs, _format: OutputFormat) -> Result<()> {
     let service = create_service().await?;
 
     // Try to parse as UUID first, then as ID
@@ -279,7 +344,7 @@ async fn handle_show(args: ShowProjectArgs) -> Result<()> {
 }
 
 /// Handle project update command
-async fn handle_update(args: UpdateProjectArgs) -> Result<()> {
+async fn handle_update(args: UpdateProjectArgs, _format: OutputFormat) -> Result<()> {
     let service = create_service().await?;
 
     // Get the project ID
@@ -387,7 +452,7 @@ async fn handle_update(args: UpdateProjectArgs) -> Result<()> {
 }
 
 /// Handle project delete command
-async fn handle_delete(args: DeleteProjectArgs) -> Result<()> {
+async fn handle_delete(args: DeleteProjectArgs, _format: OutputFormat) -> Result<()> {
     let service = create_service().await?;
 
     // Get the project
@@ -423,7 +488,7 @@ async fn handle_delete(args: DeleteProjectArgs) -> Result<()> {
 }
 
 /// Handle project archive command
-async fn handle_archive(args: ArchiveProjectArgs) -> Result<()> {
+async fn handle_archive(args: ArchiveProjectArgs, _format: OutputFormat) -> Result<()> {
     let service = create_service().await?;
 
     // Get the project

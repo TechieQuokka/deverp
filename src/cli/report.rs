@@ -3,7 +3,7 @@
 use std::sync::Arc;
 use crate::Result;
 use crate::utils::formatter::{table_header, table_row, section_header, key_value};
-use super::commands::ReportCommand;
+use super::commands::{ReportCommand, OutputFormat};
 use crate::config::settings::Settings;
 use crate::infrastructure::database;
 
@@ -16,7 +16,7 @@ use crate::infrastructure::repositories::{
 };
 
 /// Handle report commands
-pub async fn handle(command: ReportCommand) -> Result<()> {
+pub async fn handle(command: ReportCommand, _format: OutputFormat) -> Result<()> {
     // Establish database connection
     let settings = Settings::default();
     let pool = database::establish_connection(&settings.database).await?;

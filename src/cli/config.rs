@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 use crate::Result;
-use super::commands::ConfigCommand;
+use super::commands::{ConfigCommand, OutputFormat};
 use crate::config::settings::Settings;
 use crate::infrastructure::database;
 
@@ -12,7 +12,7 @@ use crate::utils::formatter::{table_header, table_row};
 use crate::utils::error::DevErpError;
 
 /// Handle config commands
-pub async fn handle(command: ConfigCommand) -> Result<()> {
+pub async fn handle(command: ConfigCommand, _format: OutputFormat) -> Result<()> {
     // Establish database connection
     let settings = Settings::default();
     let pool = database::establish_connection(&settings.database).await?;
