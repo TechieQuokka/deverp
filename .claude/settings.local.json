@@ -22,7 +22,8 @@
       "Bash(mkdir:*)",
       "Bash(cargo test:*)",
       "Bash(cargo build:*)",
-      "Bash(cargo check:*)"
+      "Bash(cargo check:*)",
+      "Bash(cargo run:*)"
     ],
     "deny": [],
     "ask": []

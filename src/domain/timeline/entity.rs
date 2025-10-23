@@ -30,7 +30,7 @@ pub struct Timeline {
 /// Timeline type enum
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "lowercase")]
-#[sqlx(type_name = "varchar")]
+#[sqlx(type_name = "varchar", rename_all = "lowercase")]
 pub enum TimelineType {
     Project,
     Sprint,
@@ -80,7 +80,7 @@ impl TryFrom<String> for TimelineType {
 /// Timeline status enum
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "lowercase")]
-#[sqlx(type_name = "varchar")]
+#[sqlx(type_name = "varchar", rename_all = "lowercase")]
 pub enum TimelineStatus {
     Planned,
     Active,
@@ -155,7 +155,7 @@ pub struct Milestone {
 /// Milestone status enum
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "lowercase")]
-#[sqlx(type_name = "varchar")]
+#[sqlx(type_name = "varchar", rename_all = "snake_case")]
 pub enum MilestoneStatus {
     Pending,
     InProgress,

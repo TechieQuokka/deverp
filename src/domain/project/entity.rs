@@ -41,7 +41,7 @@ pub struct Project {
 /// Project status enum
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "lowercase")]
-#[sqlx(type_name = "varchar")]
+#[sqlx(type_name = "varchar", rename_all = "snake_case")]
 pub enum ProjectStatus {
     Planning,
     Active,
@@ -97,7 +97,7 @@ impl TryFrom<String> for ProjectStatus {
 /// Priority enum
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "lowercase")]
-#[sqlx(type_name = "varchar")]
+#[sqlx(type_name = "varchar", rename_all = "lowercase")]
 pub enum Priority {
     Low,
     Medium,

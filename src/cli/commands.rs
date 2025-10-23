@@ -489,7 +489,7 @@ pub struct CreateResourceArgs {
     pub resource_type: String,
 
     /// Version
-    #[arg(short, long)]
+    #[arg(long)]
     pub version: Option<String>,
 
     /// Resource URL
