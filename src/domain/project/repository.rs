@@ -3,8 +3,8 @@
 use async_trait::async_trait;
 use uuid::Uuid;
 
-use crate::utils::error::DevErpError;
 use super::entity::{CreateProject, Project, ProjectFilter, UpdateProject};
+use crate::utils::error::DevErpError;
 
 /// Repository trait for project data access
 ///

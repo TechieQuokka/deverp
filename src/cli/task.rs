@@ -1,27 +1,27 @@
 // Task CLI commands implementation
 
-use std::sync::Arc;
 use chrono::{DateTime, NaiveDate, Utc};
 use colored::Colorize;
+use std::sync::Arc;
 use uuid::Uuid;
 
 use super::commands::{
-    TaskCommand, CreateTaskArgs, ListTaskArgs, ShowTaskArgs,
-    UpdateTaskArgs, DeleteTaskArgs, AddDependencyArgs,
-    RemoveDependencyArgs, AddCommentArgs, OutputFormat,
+    AddCommentArgs, AddDependencyArgs, CreateTaskArgs, DeleteTaskArgs, ListTaskArgs, OutputFormat,
+    RemoveDependencyArgs, ShowTaskArgs, TaskCommand, UpdateTaskArgs,
 };
-use super::output::{PaginatedOutput, section_title, summary_line, confirm, empty_state};
+use super::output::{confirm, empty_state, section_title, summary_line, PaginatedOutput};
 use crate::config::settings::Settings;
 use crate::domain::task::{
-    entity::{CreateTask, UpdateTask, TaskFilter, TaskStatus, TaskPriority, TaskType, DependencyType, CreateTaskDependency, CreateTaskComment},
+    entity::{
+        CreateTask, CreateTaskComment, CreateTaskDependency, DependencyType, TaskFilter,
+        TaskPriority, TaskStatus, TaskType, UpdateTask,
+    },
     service::TaskService,
 };
 use crate::infrastructure::{
     database,
     repositories::{
-        PostgresTaskRepository,
-        PostgresTaskDependencyRepository,
-        PostgresTaskCommentRepository,
+        PostgresTaskCommentRepository, PostgresTaskDependencyRepository, PostgresTaskRepository,
     },
 };
 use crate::utils::error::DevErpError;
@@ -59,24 +59,33 @@ async fn handle_create(args: CreateTaskArgs) -> Result<()> {
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<TaskStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<TaskStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse priority if provided
     let priority = if let Some(priority_str) = args.priority {
-        Some(priority_str.parse::<TaskPriority>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            priority_str
+                .parse::<TaskPriority>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse task type if provided
     let task_type = if let Some(type_str) = args.task_type {
-        Some(type_str.parse::<TaskType>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            type_str
+                .parse::<TaskType>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
@@ -90,7 +99,8 @@ async fn handle_create(args: CreateTaskArgs) -> Result<()> {
 
     // Parse tags if provided
     let tags = args.tags.map(|tags_str| {
-        tags_str.split(',')
+        tags_str
+            .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect()
@@ -113,8 +123,7 @@ async fn handle_create(args: CreateTaskArgs) -> Result<()> {
     };
 
     // Validate input
-    input.validate()
-        .map_err(|e| DevErpError::Validation(e))?;
+    input.validate().map_err(DevErpError::Validation)?;
 
     // Create task
     let task = service.create_task(input).await?;
@@ -145,24 +154,33 @@ async fn handle_list(args: ListTaskArgs) -> Result<()> {
 
     // Parse status filter if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<TaskStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<TaskStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse priority filter if provided
     let priority = if let Some(priority_str) = args.priority {
-        Some(priority_str.parse::<TaskPriority>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            priority_str
+                .parse::<TaskPriority>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse task type filter if provided
     let task_type = if let Some(type_str) = args.task_type {
-        Some(type_str.parse::<TaskType>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            type_str
+                .parse::<TaskType>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
@@ -210,12 +228,14 @@ async fn handle_list(args: ListTaskArgs) -> Result<()> {
             TaskPriority::Low => "-".dimmed(),
         };
 
-        println!("  {} {} {}",
+        println!(
+            "  {} {} {}",
             priority_indicator,
             task.title.bold(),
             status_str
         );
-        println!("    ID: {} | UUID: {} | Project: {}",
+        println!(
+            "    ID: {} | UUID: {} | Project: {}",
             task.id.to_string().yellow(),
             task.uuid.to_string().dimmed(),
             task.project_id.to_string().cyan()
@@ -233,7 +253,7 @@ async fn handle_list(args: ListTaskArgs) -> Result<()> {
         // Additional info
         let mut info_parts = vec![];
         if let Some(ref task_type) = task.task_type {
-            info_parts.push(format!("Type: {}", task_type.to_string()));
+            info_parts.push(format!("Type: {}", task_type));
         }
         if let Some(ref assigned_to) = task.assigned_to {
             info_parts.push(format!("Assigned: {}", assigned_to));
@@ -266,8 +286,8 @@ async fn handle_show(args: ShowTaskArgs) -> Result<()> {
         service.get_task_by_id(id).await?
     } else {
         return Err(DevErpError::Validation(
-            "Invalid identifier. Must be a valid UUID or numeric ID".to_string()
-        ).into());
+            "Invalid identifier. Must be a valid UUID or numeric ID".to_string(),
+        ));
     };
 
     // Display task details
@@ -311,15 +331,24 @@ async fn handle_show(args: ShowTaskArgs) -> Result<()> {
     }
 
     if let Some(due_date) = task.due_date {
-        summary_line("Due Date", &due_date.format("%Y-%m-%d %H:%M:%S").to_string());
+        summary_line(
+            "Due Date",
+            &due_date.format("%Y-%m-%d %H:%M:%S").to_string(),
+        );
     }
 
     if let Some(started_at) = task.started_at {
-        summary_line("Started At", &started_at.format("%Y-%m-%d %H:%M:%S").to_string());
+        summary_line(
+            "Started At",
+            &started_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+        );
     }
 
     if let Some(completed_at) = task.completed_at {
-        summary_line("Completed At", &completed_at.format("%Y-%m-%d %H:%M:%S").to_string());
+        summary_line(
+            "Completed At",
+            &completed_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+        );
     }
 
     if let Some(ref tags) = task.tags {
@@ -329,8 +358,14 @@ async fn handle_show(args: ShowTaskArgs) -> Result<()> {
     }
 
     println!();
-    summary_line("Created", &task.created_at.format("%Y-%m-%d %H:%M:%S").to_string());
-    summary_line("Updated", &task.updated_at.format("%Y-%m-%d %H:%M:%S").to_string());
+    summary_line(
+        "Created",
+        &task.created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+    );
+    summary_line(
+        "Updated",
+        &task.updated_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+    );
 
     // Get and display dependencies
     let dependencies = service.get_task_dependencies(task.id).await?;
@@ -338,7 +373,8 @@ async fn handle_show(args: ShowTaskArgs) -> Result<()> {
         println!();
         section_title("Dependencies");
         for dep in dependencies {
-            println!("  {} Task {} depends on Task {} ({})",
+            println!(
+                "  {} Task {} depends on Task {} ({})",
                 "→".cyan(),
                 dep.task_id,
                 dep.depends_on_task_id,
@@ -354,10 +390,15 @@ async fn handle_show(args: ShowTaskArgs) -> Result<()> {
         section_title("Comments");
         for comment in comments {
             let author = comment.author.as_deref().unwrap_or("Unknown");
-            println!("  {} {} - {}",
+            println!(
+                "  {} {} - {}",
                 "💬".cyan(),
                 author.bold(),
-                comment.created_at.format("%Y-%m-%d %H:%M:%S").to_string().dimmed()
+                comment
+                    .created_at
+                    .format("%Y-%m-%d %H:%M:%S")
+                    .to_string()
+                    .dimmed()
             );
             println!("    {}", comment.comment_text);
             println!();
@@ -381,30 +422,39 @@ async fn handle_update(args: UpdateTaskArgs) -> Result<()> {
         id
     } else {
         return Err(DevErpError::Validation(
-            "Invalid identifier. Must be a valid UUID or numeric ID".to_string()
-        ).into());
+            "Invalid identifier. Must be a valid UUID or numeric ID".to_string(),
+        ));
     };
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<TaskStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<TaskStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse priority if provided
     let priority = if let Some(priority_str) = args.priority {
-        Some(priority_str.parse::<TaskPriority>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            priority_str
+                .parse::<TaskPriority>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse task type if provided
     let task_type = if let Some(type_str) = args.task_type {
-        Some(type_str.parse::<TaskType>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            type_str
+                .parse::<TaskType>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
@@ -418,7 +468,8 @@ async fn handle_update(args: UpdateTaskArgs) -> Result<()> {
 
     // Parse tags if provided
     let tags = args.tags.map(|tags_str| {
-        tags_str.split(',')
+        tags_str
+            .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect()
@@ -440,8 +491,7 @@ async fn handle_update(args: UpdateTaskArgs) -> Result<()> {
     };
 
     // Validate input
-    input.validate()
-        .map_err(|e| DevErpError::Validation(e))?;
+    input.validate().map_err(DevErpError::Validation)?;
 
     // Update task
     let task = service.update_task(input).await?;
@@ -469,8 +519,8 @@ async fn handle_delete(args: DeleteTaskArgs) -> Result<()> {
         service.get_task_by_id(id).await?
     } else {
         return Err(DevErpError::Validation(
-            "Invalid identifier. Must be a valid UUID or numeric ID".to_string()
-        ).into());
+            "Invalid identifier. Must be a valid UUID or numeric ID".to_string(),
+        ));
     };
 
     // Confirm deletion
@@ -489,7 +539,11 @@ async fn handle_delete(args: DeleteTaskArgs) -> Result<()> {
     // Delete task
     service.delete_task(task.id).await?;
 
-    println!("{} Task '{}' deleted successfully.", "✓".green().bold(), task.title);
+    println!(
+        "{} Task '{}' deleted successfully.",
+        "✓".green().bold(),
+        task.title
+    );
 
     Ok(())
 }
@@ -500,8 +554,11 @@ async fn handle_add_dependency(args: AddDependencyArgs) -> Result<()> {
 
     // Parse dependency type if provided
     let dependency_type = if let Some(type_str) = args.dependency_type {
-        Some(type_str.parse::<DependencyType>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            type_str
+                .parse::<DependencyType>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
@@ -514,8 +571,7 @@ async fn handle_add_dependency(args: AddDependencyArgs) -> Result<()> {
     };
 
     // Validate input
-    input.validate()
-        .map_err(|e| DevErpError::Validation(e))?;
+    input.validate().map_err(DevErpError::Validation)?;
 
     // Add dependency
     let dependency = service.add_task_dependency(input).await?;
@@ -536,13 +592,21 @@ async fn handle_remove_dependency(args: RemoveDependencyArgs) -> Result<()> {
     let service = create_service().await?;
 
     // Remove dependency
-    service.remove_task_dependency(args.task_id, args.depends_on_task_id).await?;
+    service
+        .remove_task_dependency(args.task_id, args.depends_on_task_id)
+        .await?;
 
     // Display success message
-    println!("{} Task dependency removed successfully!", "✓".green().bold());
+    println!(
+        "{} Task dependency removed successfully!",
+        "✓".green().bold()
+    );
     println!();
     summary_line("Task ID", &args.task_id.to_string());
-    summary_line("Removed Dependency On", &args.depends_on_task_id.to_string());
+    summary_line(
+        "Removed Dependency On",
+        &args.depends_on_task_id.to_string(),
+    );
     println!();
 
     Ok(())
@@ -560,8 +624,7 @@ async fn handle_add_comment(args: AddCommentArgs) -> Result<()> {
     };
 
     // Validate input
-    input.validate()
-        .map_err(|e| DevErpError::Validation(e))?;
+    input.validate().map_err(DevErpError::Validation)?;
 
     // Add comment
     let comment = service.add_task_comment(input).await?;
@@ -589,12 +652,14 @@ fn parse_datetime(date_str: &str) -> Result<DateTime<Utc>> {
 
     // Try parsing as date only (assume midnight UTC)
     if let Ok(date) = NaiveDate::parse_from_str(date_str, "%Y-%m-%d") {
-        let naive_dt = date.and_hms_opt(0, 0, 0)
+        let naive_dt = date
+            .and_hms_opt(0, 0, 0)
             .ok_or_else(|| DevErpError::Validation("Invalid time component".to_string()))?;
         return Ok(DateTime::from_naive_utc_and_offset(naive_dt, Utc));
     }
 
-    Err(DevErpError::Validation(
-        format!("Invalid date format: {}. Expected YYYY-MM-DD or 'YYYY-MM-DD HH:MM:SS'", date_str)
-    ).into())
+    Err(DevErpError::Validation(format!(
+        "Invalid date format: {}. Expected YYYY-MM-DD or 'YYYY-MM-DD HH:MM:SS'",
+        date_str
+    )))
 }

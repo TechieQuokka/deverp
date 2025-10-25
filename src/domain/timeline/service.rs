@@ -3,12 +3,12 @@
 use std::sync::Arc;
 use tracing::{debug, info};
 
-use crate::utils::error::DevErpError;
 use super::entity::{
-    CreateTimeline, Timeline, TimelineFilter, UpdateTimeline,
-    CreateMilestone, Milestone, MilestoneFilter, UpdateMilestone,
+    CreateMilestone, CreateTimeline, Milestone, MilestoneFilter, Timeline, TimelineFilter,
+    UpdateMilestone, UpdateTimeline,
 };
-use super::repository::{TimelineRepository, MilestoneRepository};
+use super::repository::{MilestoneRepository, TimelineRepository};
+use crate::utils::error::DevErpError;
 
 /// Timeline service containing business logic
 ///
@@ -54,7 +54,10 @@ impl TimelineService {
     /// - Timeline name must not be empty
     /// - End date must be after or equal to start date
     pub async fn create_timeline(&self, input: CreateTimeline) -> Result<Timeline, DevErpError> {
-        debug!("Service: Creating timeline '{}' for project {}", input.name, input.project_id);
+        debug!(
+            "Service: Creating timeline '{}' for project {}",
+            input.name, input.project_id
+        );
 
         let timeline = self.timeline_repository.create(input).await?;
 
@@ -87,7 +90,10 @@ impl TimelineService {
     ///
     /// # Returns
     /// * `Ok(Vec<Timeline>)` - List of timelines matching the filter
-    pub async fn list_timelines(&self, filter: TimelineFilter) -> Result<Vec<Timeline>, DevErpError> {
+    pub async fn list_timelines(
+        &self,
+        filter: TimelineFilter,
+    ) -> Result<Vec<Timeline>, DevErpError> {
         debug!("Service: Listing timelines with filter: {:?}", filter);
 
         self.timeline_repository.find_all(filter).await
@@ -100,7 +106,10 @@ impl TimelineService {
     ///
     /// # Returns
     /// * `Ok(Vec<Timeline>)` - List of timelines for the project
-    pub async fn get_timelines_by_project(&self, project_id: i64) -> Result<Vec<Timeline>, DevErpError> {
+    pub async fn get_timelines_by_project(
+        &self,
+        project_id: i64,
+    ) -> Result<Vec<Timeline>, DevErpError> {
         debug!("Service: Getting timelines for project {}", project_id);
 
         self.timeline_repository.find_by_project(project_id).await
@@ -161,7 +170,10 @@ impl TimelineService {
         let deleted = self.timeline_repository.soft_delete(id).await?;
 
         if !deleted {
-            return Err(DevErpError::NotFound(format!("Timeline with id {} not found", id)));
+            return Err(DevErpError::NotFound(format!(
+                "Timeline with id {} not found",
+                id
+            )));
         }
 
         info!(timeline_id = %id, "Timeline deleted");
@@ -183,7 +195,10 @@ impl TimelineService {
         let restored = self.timeline_repository.restore(id).await?;
 
         if !restored {
-            return Err(DevErpError::NotFound(format!("Timeline with id {} not found or not deleted", id)));
+            return Err(DevErpError::NotFound(format!(
+                "Timeline with id {} not found or not deleted",
+                id
+            )));
         }
 
         info!(timeline_id = %id, "Timeline restored");
@@ -207,7 +222,10 @@ impl TimelineService {
     /// - Timeline and project must exist
     /// - Target date should ideally be within the timeline's date range (warning if not)
     pub async fn create_milestone(&self, input: CreateMilestone) -> Result<Milestone, DevErpError> {
-        debug!("Service: Creating milestone '{}' for timeline {}", input.name, input.timeline_id);
+        debug!(
+            "Service: Creating milestone '{}' for timeline {}",
+            input.name, input.timeline_id
+        );
 
         // Verify timeline exists
         let timeline = self.get_timeline(input.timeline_id).await?;
@@ -251,7 +269,10 @@ impl TimelineService {
     ///
     /// # Returns
     /// * `Ok(Vec<Milestone>)` - List of milestones matching the filter
-    pub async fn list_milestones(&self, filter: MilestoneFilter) -> Result<Vec<Milestone>, DevErpError> {
+    pub async fn list_milestones(
+        &self,
+        filter: MilestoneFilter,
+    ) -> Result<Vec<Milestone>, DevErpError> {
         debug!("Service: Listing milestones with filter: {:?}", filter);
 
         self.milestone_repository.find_all(filter).await
@@ -264,10 +285,15 @@ impl TimelineService {
     ///
     /// # Returns
     /// * `Ok(Vec<Milestone>)` - List of milestones for the timeline
-    pub async fn get_milestones_by_timeline(&self, timeline_id: i64) -> Result<Vec<Milestone>, DevErpError> {
+    pub async fn get_milestones_by_timeline(
+        &self,
+        timeline_id: i64,
+    ) -> Result<Vec<Milestone>, DevErpError> {
         debug!("Service: Getting milestones for timeline {}", timeline_id);
 
-        self.milestone_repository.find_by_timeline(timeline_id).await
+        self.milestone_repository
+            .find_by_timeline(timeline_id)
+            .await
     }
 
     /// Get all milestones for a project
@@ -277,7 +303,10 @@ impl TimelineService {
     ///
     /// # Returns
     /// * `Ok(Vec<Milestone>)` - List of milestones for the project
-    pub async fn get_milestones_by_project(&self, project_id: i64) -> Result<Vec<Milestone>, DevErpError> {
+    pub async fn get_milestones_by_project(
+        &self,
+        project_id: i64,
+    ) -> Result<Vec<Milestone>, DevErpError> {
         debug!("Service: Getting milestones for project {}", project_id);
 
         self.milestone_repository.find_by_project(project_id).await
@@ -328,7 +357,10 @@ impl TimelineService {
         let deleted = self.milestone_repository.soft_delete(id).await?;
 
         if !deleted {
-            return Err(DevErpError::NotFound(format!("Milestone with id {} not found", id)));
+            return Err(DevErpError::NotFound(format!(
+                "Milestone with id {} not found",
+                id
+            )));
         }
 
         info!(milestone_id = %id, "Milestone deleted");
@@ -350,7 +382,10 @@ impl TimelineService {
         let restored = self.milestone_repository.restore(id).await?;
 
         if !restored {
-            return Err(DevErpError::NotFound(format!("Milestone with id {} not found or not deleted", id)));
+            return Err(DevErpError::NotFound(format!(
+                "Milestone with id {} not found or not deleted",
+                id
+            )));
         }
 
         info!(milestone_id = %id, "Milestone restored");
@@ -362,8 +397,8 @@ impl TimelineService {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::domain::timeline::entity::{MilestoneStatus, TimelineStatus, TimelineType};
     use async_trait::async_trait;
-    use crate::domain::timeline::entity::{TimelineType, TimelineStatus, MilestoneStatus};
     use chrono::{NaiveDate, Utc};
     use mockall::mock;
     use mockall::predicate::*;
@@ -447,10 +482,8 @@ mod tests {
             .times(1)
             .returning(move |_| Ok(create_test_timeline(1, 1, "Sprint 1")));
 
-        let service = TimelineService::new(
-            Arc::new(mock_timeline_repo),
-            Arc::new(mock_milestone_repo),
-        );
+        let service =
+            TimelineService::new(Arc::new(mock_timeline_repo), Arc::new(mock_milestone_repo));
 
         let input = CreateTimeline {
             project_id: 1,
@@ -480,10 +513,8 @@ mod tests {
             .times(1)
             .returning(move |_| Ok(Some(create_test_timeline(1, 1, "Sprint 1"))));
 
-        let service = TimelineService::new(
-            Arc::new(mock_timeline_repo),
-            Arc::new(mock_milestone_repo),
-        );
+        let service =
+            TimelineService::new(Arc::new(mock_timeline_repo), Arc::new(mock_milestone_repo));
 
         let result = service.get_timeline(1).await;
         assert!(result.is_ok());
@@ -502,10 +533,8 @@ mod tests {
             .times(1)
             .returning(|_| Ok(None));
 
-        let service = TimelineService::new(
-            Arc::new(mock_timeline_repo),
-            Arc::new(mock_milestone_repo),
-        );
+        let service =
+            TimelineService::new(Arc::new(mock_timeline_repo), Arc::new(mock_milestone_repo));
 
         let result = service.get_timeline(999).await;
         assert!(result.is_err());
@@ -534,10 +563,8 @@ mod tests {
             .times(1)
             .returning(move |_| Ok(create_test_milestone(1, 1, 1, "Feature Complete")));
 
-        let service = TimelineService::new(
-            Arc::new(mock_timeline_repo),
-            Arc::new(mock_milestone_repo),
-        );
+        let service =
+            TimelineService::new(Arc::new(mock_timeline_repo), Arc::new(mock_milestone_repo));
 
         let input = CreateMilestone {
             timeline_id: 1,
@@ -568,10 +595,8 @@ mod tests {
             .times(1)
             .returning(|_| Ok(None));
 
-        let service = TimelineService::new(
-            Arc::new(mock_timeline_repo),
-            Arc::new(mock_milestone_repo),
-        );
+        let service =
+            TimelineService::new(Arc::new(mock_timeline_repo), Arc::new(mock_milestone_repo));
 
         let input = CreateMilestone {
             timeline_id: 999,
@@ -605,10 +630,8 @@ mod tests {
             .times(1)
             .returning(|_| Ok(true));
 
-        let service = TimelineService::new(
-            Arc::new(mock_timeline_repo),
-            Arc::new(mock_milestone_repo),
-        );
+        let service =
+            TimelineService::new(Arc::new(mock_timeline_repo), Arc::new(mock_milestone_repo));
 
         let result = service.delete_timeline(1).await;
         assert!(result.is_ok());
@@ -625,10 +648,8 @@ mod tests {
             .times(1)
             .returning(|_| Ok(false));
 
-        let service = TimelineService::new(
-            Arc::new(mock_timeline_repo),
-            Arc::new(mock_milestone_repo),
-        );
+        let service =
+            TimelineService::new(Arc::new(mock_timeline_repo), Arc::new(mock_milestone_repo));
 
         let result = service.delete_timeline(999).await;
         assert!(result.is_err());
@@ -656,10 +677,8 @@ mod tests {
                 ])
             });
 
-        let service = TimelineService::new(
-            Arc::new(mock_timeline_repo),
-            Arc::new(mock_milestone_repo),
-        );
+        let service =
+            TimelineService::new(Arc::new(mock_timeline_repo), Arc::new(mock_milestone_repo));
 
         let result = service.get_milestones_by_timeline(1).await;
         assert!(result.is_ok());

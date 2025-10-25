@@ -39,8 +39,11 @@ pub trait ResourceRepository: Send + Sync {
     ) -> Result<ProjectResource, DevErpError>;
 
     /// Unlink a resource from a project (soft delete)
-    async fn unlink_from_project(&self, project_id: i64, resource_id: i64)
-        -> Result<bool, DevErpError>;
+    async fn unlink_from_project(
+        &self,
+        project_id: i64,
+        resource_id: i64,
+    ) -> Result<bool, DevErpError>;
 
     /// Update project-resource link
     async fn update_project_resource(
@@ -52,7 +55,8 @@ pub trait ResourceRepository: Send + Sync {
     async fn find_by_project_id(&self, project_id: i64) -> Result<Vec<Resource>, DevErpError>;
 
     /// Find all projects using a resource
-    async fn find_projects_using_resource(&self, resource_id: i64) -> Result<Vec<i64>, DevErpError>;
+    async fn find_projects_using_resource(&self, resource_id: i64)
+        -> Result<Vec<i64>, DevErpError>;
 
     /// Get resource usage statistics
     async fn get_usage_stats(&self, resource_id: i64) -> Result<ResourceUsageStats, DevErpError>;

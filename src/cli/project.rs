@@ -1,18 +1,18 @@
 // Project CLI commands implementation
 
-use std::sync::Arc;
 use chrono::NaiveDate;
 use colored::Colorize;
+use std::sync::Arc;
 use uuid::Uuid;
 
 use super::commands::{
-    ProjectCommand, CreateProjectArgs, ListProjectArgs, ShowProjectArgs,
-    UpdateProjectArgs, DeleteProjectArgs, ArchiveProjectArgs, OutputFormat,
+    ArchiveProjectArgs, CreateProjectArgs, DeleteProjectArgs, ListProjectArgs, OutputFormat,
+    ProjectCommand, ShowProjectArgs, UpdateProjectArgs,
 };
-use super::output::{PaginatedOutput, section_title, summary_line, confirm, empty_state};
+use super::output::{confirm, empty_state, section_title, summary_line, PaginatedOutput};
 use crate::config::settings::Settings;
 use crate::domain::project::{
-    entity::{CreateProject, UpdateProject, ProjectFilter, ProjectStatus, Priority},
+    entity::{CreateProject, Priority, ProjectFilter, ProjectStatus, UpdateProject},
     service::ProjectService,
 };
 use crate::infrastructure::{database, repositories::project_repo::PostgresProjectRepository};
@@ -46,38 +46,57 @@ async fn handle_create(args: CreateProjectArgs, _format: OutputFormat) -> Result
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<ProjectStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<ProjectStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse priority if provided
     let priority = if let Some(priority_str) = args.priority {
-        Some(priority_str.parse::<Priority>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            priority_str
+                .parse::<Priority>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse dates if provided
     let start_date = if let Some(date_str) = args.start_date {
-        Some(NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(format!("Invalid start date format: {}. Expected YYYY-MM-DD", date_str)))?)
+        Some(
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+                DevErpError::Validation(format!(
+                    "Invalid start date format: {}. Expected YYYY-MM-DD",
+                    date_str
+                ))
+            })?,
+        )
     } else {
         None
     };
 
     let end_date = if let Some(date_str) = args.end_date {
-        Some(NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(format!("Invalid end date format: {}. Expected YYYY-MM-DD", date_str)))?)
+        Some(
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+                DevErpError::Validation(format!(
+                    "Invalid end date format: {}. Expected YYYY-MM-DD",
+                    date_str
+                ))
+            })?,
+        )
     } else {
         None
     };
 
     // Parse tags if provided
     let tags = args.tags.map(|tags_str| {
-        tags_str.split(',')
+        tags_str
+            .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect()
@@ -99,8 +118,7 @@ async fn handle_create(args: CreateProjectArgs, _format: OutputFormat) -> Result
     };
 
     // Validate input
-    input.validate()
-        .map_err(|e| DevErpError::Validation(e))?;
+    input.validate().map_err(DevErpError::Validation)?;
 
     // Create project
     let project = service.create_project(input).await?;
@@ -130,23 +148,30 @@ async fn handle_list(args: ListProjectArgs, format: OutputFormat) -> Result<()> 
 
     // Parse status filter if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<ProjectStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<ProjectStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse priority filter if provided
     let priority = if let Some(priority_str) = args.priority {
-        Some(priority_str.parse::<Priority>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            priority_str
+                .parse::<Priority>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse tags filter if provided
     let tags = args.tags.map(|tags_str| {
-        tags_str.split(',')
+        tags_str
+            .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect()
@@ -183,12 +208,14 @@ async fn handle_list(args: ListProjectArgs, format: OutputFormat) -> Result<()> 
     println!();
 
     for project in &projects {
-        println!("  {} {} - {}",
+        println!(
+            "  {} {} - {}",
             "•".cyan(),
             project.name.bold(),
             project.status.to_string().dimmed()
         );
-        println!("    ID: {} | UUID: {}",
+        println!(
+            "    ID: {} | UUID: {}",
             project.id.to_string().yellow(),
             project.uuid.to_string().dimmed()
         );
@@ -206,7 +233,8 @@ async fn handle_list(args: ListProjectArgs, format: OutputFormat) -> Result<()> 
             println!("    {}", short_desc.dimmed());
         }
 
-        println!("    Priority: {} | Progress: {}%",
+        println!(
+            "    Priority: {} | Progress: {}%",
             project.priority.to_string().cyan(),
             project.progress_percentage.unwrap_or(0)
         );
@@ -215,12 +243,16 @@ async fn handle_list(args: ListProjectArgs, format: OutputFormat) -> Result<()> 
         if let Some(start_date) = project.start_date {
             print!("    ");
             if let Some(end_date) = project.end_date {
-                println!("Period: {} → {}",
+                println!(
+                    "Period: {} → {}",
                     start_date.format("%Y-%m-%d").to_string().green(),
                     end_date.format("%Y-%m-%d").to_string().green()
                 );
             } else {
-                println!("Start: {}", start_date.format("%Y-%m-%d").to_string().green());
+                println!(
+                    "Start: {}",
+                    start_date.format("%Y-%m-%d").to_string().green()
+                );
             }
         }
 
@@ -233,7 +265,10 @@ async fn handle_list(args: ListProjectArgs, format: OutputFormat) -> Result<()> 
                     print!(" → {}", actual_end.format("%Y-%m-%d").to_string().yellow());
                 }
             } else if let Some(actual_end) = project.actual_end_date {
-                print!("End: {}", actual_end.format("%Y-%m-%d").to_string().yellow());
+                print!(
+                    "End: {}",
+                    actual_end.format("%Y-%m-%d").to_string().yellow()
+                );
             }
             println!();
         }
@@ -250,7 +285,8 @@ async fn handle_list(args: ListProjectArgs, format: OutputFormat) -> Result<()> 
         // Display tags if available
         if let Some(ref tags) = project.tags {
             if !tags.is_empty() {
-                println!("    Tags: {}",
+                println!(
+                    "    Tags: {}",
                     tags.iter()
                         .map(|t| format!("#{}", t))
                         .collect::<Vec<_>>()
@@ -281,8 +317,8 @@ async fn handle_show(args: ShowProjectArgs, _format: OutputFormat) -> Result<()>
         service.get_project(id).await?
     } else {
         return Err(DevErpError::Validation(
-            "Invalid identifier. Must be a valid UUID or numeric ID".to_string()
-        ).into());
+            "Invalid identifier. Must be a valid UUID or numeric ID".to_string(),
+        ));
     };
 
     // Display project details
@@ -303,7 +339,10 @@ async fn handle_show(args: ShowProjectArgs, _format: OutputFormat) -> Result<()>
 
     summary_line("Status", &project.status.to_string());
     summary_line("Priority", &project.priority.to_string());
-    summary_line("Progress", &format!("{}%", project.progress_percentage.unwrap_or(0)));
+    summary_line(
+        "Progress",
+        &format!("{}%", project.progress_percentage.unwrap_or(0)),
+    );
 
     if let Some(start_date) = project.start_date {
         summary_line("Start Date", &start_date.to_string());
@@ -335,8 +374,14 @@ async fn handle_show(args: ShowProjectArgs, _format: OutputFormat) -> Result<()>
     }
 
     println!();
-    summary_line("Created", &project.created_at.format("%Y-%m-%d %H:%M:%S").to_string());
-    summary_line("Updated", &project.updated_at.format("%Y-%m-%d %H:%M:%S").to_string());
+    summary_line(
+        "Created",
+        &project.created_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+    );
+    summary_line(
+        "Updated",
+        &project.updated_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+    );
 
     println!();
 
@@ -355,58 +400,89 @@ async fn handle_update(args: UpdateProjectArgs, _format: OutputFormat) -> Result
         id
     } else {
         return Err(DevErpError::Validation(
-            "Invalid identifier. Must be a valid UUID or numeric ID".to_string()
-        ).into());
+            "Invalid identifier. Must be a valid UUID or numeric ID".to_string(),
+        ));
     };
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<ProjectStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<ProjectStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse priority if provided
     let priority = if let Some(priority_str) = args.priority {
-        Some(priority_str.parse::<Priority>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            priority_str
+                .parse::<Priority>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse dates if provided
     let start_date = if let Some(date_str) = args.start_date {
-        Some(NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(format!("Invalid start date format: {}. Expected YYYY-MM-DD", date_str)))?)
+        Some(
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+                DevErpError::Validation(format!(
+                    "Invalid start date format: {}. Expected YYYY-MM-DD",
+                    date_str
+                ))
+            })?,
+        )
     } else {
         None
     };
 
     let end_date = if let Some(date_str) = args.end_date {
-        Some(NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(format!("Invalid end date format: {}. Expected YYYY-MM-DD", date_str)))?)
+        Some(
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+                DevErpError::Validation(format!(
+                    "Invalid end date format: {}. Expected YYYY-MM-DD",
+                    date_str
+                ))
+            })?,
+        )
     } else {
         None
     };
 
     let actual_start_date = if let Some(date_str) = args.actual_start_date {
-        Some(NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(format!("Invalid actual start date format: {}. Expected YYYY-MM-DD", date_str)))?)
+        Some(
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+                DevErpError::Validation(format!(
+                    "Invalid actual start date format: {}. Expected YYYY-MM-DD",
+                    date_str
+                ))
+            })?,
+        )
     } else {
         None
     };
 
     let actual_end_date = if let Some(date_str) = args.actual_end_date {
-        Some(NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(format!("Invalid actual end date format: {}. Expected YYYY-MM-DD", date_str)))?)
+        Some(
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+                DevErpError::Validation(format!(
+                    "Invalid actual end date format: {}. Expected YYYY-MM-DD",
+                    date_str
+                ))
+            })?,
+        )
     } else {
         None
     };
 
     // Parse tags if provided
     let tags = args.tags.map(|tags_str| {
-        tags_str.split(',')
+        tags_str
+            .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect()
@@ -432,8 +508,7 @@ async fn handle_update(args: UpdateProjectArgs, _format: OutputFormat) -> Result
     };
 
     // Validate input
-    input.validate()
-        .map_err(|e| DevErpError::Validation(e))?;
+    input.validate().map_err(DevErpError::Validation)?;
 
     // Update project
     let project = service.update_project(input).await?;
@@ -445,7 +520,10 @@ async fn handle_update(args: UpdateProjectArgs, _format: OutputFormat) -> Result
     summary_line("Name", &project.name);
     summary_line("Status", &project.status.to_string());
     summary_line("Priority", &project.priority.to_string());
-    summary_line("Progress", &format!("{}%", project.progress_percentage.unwrap_or(0)));
+    summary_line(
+        "Progress",
+        &format!("{}%", project.progress_percentage.unwrap_or(0)),
+    );
     println!();
 
     Ok(())
@@ -462,8 +540,8 @@ async fn handle_delete(args: DeleteProjectArgs, _format: OutputFormat) -> Result
         service.get_project(id).await?
     } else {
         return Err(DevErpError::Validation(
-            "Invalid identifier. Must be a valid UUID or numeric ID".to_string()
-        ).into());
+            "Invalid identifier. Must be a valid UUID or numeric ID".to_string(),
+        ));
     };
 
     // Confirm deletion
@@ -482,7 +560,11 @@ async fn handle_delete(args: DeleteProjectArgs, _format: OutputFormat) -> Result
     // Delete project
     service.delete_project(project.id).await?;
 
-    println!("{} Project '{}' deleted successfully.", "✓".green().bold(), project.name);
+    println!(
+        "{} Project '{}' deleted successfully.",
+        "✓".green().bold(),
+        project.name
+    );
 
     Ok(())
 }
@@ -498,14 +580,18 @@ async fn handle_archive(args: ArchiveProjectArgs, _format: OutputFormat) -> Resu
         service.get_project(id).await?
     } else {
         return Err(DevErpError::Validation(
-            "Invalid identifier. Must be a valid UUID or numeric ID".to_string()
-        ).into());
+            "Invalid identifier. Must be a valid UUID or numeric ID".to_string(),
+        ));
     };
 
     // Archive project (set status to Archived)
     let archived_project = service.archive_project(project.id).await?;
 
-    println!("{} Project '{}' archived successfully.", "✓".green().bold(), archived_project.name);
+    println!(
+        "{} Project '{}' archived successfully.",
+        "✓".green().bold(),
+        archived_project.name
+    );
     summary_line("Status", &archived_project.status.to_string());
     println!();
 

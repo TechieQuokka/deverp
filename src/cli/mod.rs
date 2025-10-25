@@ -4,16 +4,16 @@ pub mod commands;
 pub mod output;
 
 // Command handlers
-pub mod project;
-pub mod task;
-pub mod resource;
-pub mod timeline;
-pub mod report;
 pub mod config;
+pub mod project;
+pub mod report;
+pub mod resource;
+pub mod task;
+pub mod timeline;
 
+use crate::Result;
 pub use commands::Cli;
 use commands::Commands;
-use crate::Result;
 
 impl Cli {
     /// Execute the CLI command

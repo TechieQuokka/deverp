@@ -1,8 +1,8 @@
 use chrono::{NaiveDate, Utc};
-use deverp::domain::project::entity::{CreateProject, ProjectStatus, Priority};
-use deverp::domain::task::entity::{CreateTask, TaskStatus, TaskType, TaskPriority};
-use deverp::domain::resource::entity::{CreateResource, ResourceType, ResourceStatus};
-use deverp::domain::timeline::entity::{CreateTimeline, TimelineType, TimelineStatus};
+use deverp::domain::project::entity::{CreateProject, Priority, ProjectStatus};
+use deverp::domain::resource::entity::{CreateResource, ResourceStatus, ResourceType};
+use deverp::domain::task::entity::{CreateTask, TaskPriority, TaskStatus, TaskType};
+use deverp::domain::timeline::entity::{CreateTimeline, TimelineStatus, TimelineType};
 
 /// Creates a test project with default values
 pub fn create_test_project(name: &str) -> CreateProject {

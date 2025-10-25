@@ -24,8 +24,7 @@ impl PostgresTaskRepository {
 #[async_trait]
 impl TaskRepository for PostgresTaskRepository {
     async fn create(&self, task: CreateTask) -> Result<Task, DevErpError> {
-        task.validate()
-            .map_err(|e| DevErpError::Validation(e))?;
+        task.validate().map_err(DevErpError::Validation)?;
 
         let task = sqlx::query_as!(
             Task,
@@ -159,8 +158,7 @@ impl TaskRepository for PostgresTaskRepository {
     }
 
     async fn update(&self, task: UpdateTask) -> Result<Task, DevErpError> {
-        task.validate()
-            .map_err(|e| DevErpError::Validation(e))?;
+        task.validate().map_err(DevErpError::Validation)?;
 
         // Build dynamic update query
         let mut updates = Vec::new();
@@ -207,9 +205,7 @@ impl TaskRepository for PostgresTaskRepository {
         }
 
         if updates.is_empty() {
-            return Err(DevErpError::Validation(
-                "No fields to update".to_string(),
-            ));
+            return Err(DevErpError::Validation("No fields to update".to_string()));
         }
 
         let query = format!(
@@ -340,9 +336,7 @@ impl TaskDependencyRepository for PostgresTaskDependencyRepository {
         &self,
         dependency: CreateTaskDependency,
     ) -> Result<TaskDependency, DevErpError> {
-        dependency
-            .validate()
-            .map_err(|e| DevErpError::Validation(e))?;
+        dependency.validate().map_err(DevErpError::Validation)?;
 
         // Check if adding this dependency would create a cycle
         if self
@@ -484,9 +478,7 @@ impl PostgresTaskCommentRepository {
 #[async_trait]
 impl TaskCommentRepository for PostgresTaskCommentRepository {
     async fn create(&self, comment: CreateTaskComment) -> Result<TaskComment, DevErpError> {
-        comment
-            .validate()
-            .map_err(|e| DevErpError::Validation(e))?;
+        comment.validate().map_err(DevErpError::Validation)?;
 
         let task_comment = sqlx::query_as!(
             TaskComment,

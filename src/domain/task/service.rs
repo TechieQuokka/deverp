@@ -73,9 +73,10 @@ impl TaskService {
     pub async fn get_task_by_uuid(&self, uuid: Uuid) -> Result<Task, DevErpError> {
         debug!("Fetching task with uuid: {}", uuid);
 
-        let task = self.task_repo.find_by_uuid(uuid).await?.ok_or_else(|| {
-            DevErpError::NotFound(format!("Task with uuid {} not found", uuid))
-        })?;
+        let task =
+            self.task_repo.find_by_uuid(uuid).await?.ok_or_else(|| {
+                DevErpError::NotFound(format!("Task with uuid {} not found", uuid))
+            })?;
 
         Ok(task)
     }
@@ -125,10 +126,7 @@ impl TaskService {
         task_id: i64,
         new_status: TaskStatus,
     ) -> Result<Task, DevErpError> {
-        debug!(
-            "Changing status of task {} to {}",
-            task_id, new_status
-        );
+        debug!("Changing status of task {} to {}", task_id, new_status);
 
         let task = self.get_task_by_id(task_id).await?;
 
@@ -171,11 +169,7 @@ impl TaskService {
     }
 
     /// Validate status transitions
-    fn is_valid_status_transition(
-        &self,
-        from_status: &TaskStatus,
-        to_status: &TaskStatus,
-    ) -> bool {
+    fn is_valid_status_transition(&self, from_status: &TaskStatus, to_status: &TaskStatus) -> bool {
         use TaskStatus::*;
 
         // Define valid transitions
@@ -263,9 +257,7 @@ impl TaskService {
         );
 
         // Validate input
-        dependency
-            .validate()
-            .map_err(DevErpError::Validation)?;
+        dependency.validate().map_err(DevErpError::Validation)?;
 
         // Verify both tasks exist
         let _task = self.get_task_by_id(dependency.task_id).await?;
@@ -310,9 +302,7 @@ impl TaskService {
             .await?;
 
         if !removed {
-            return Err(DevErpError::NotFound(
-                "Dependency not found".to_string(),
-            ));
+            return Err(DevErpError::NotFound("Dependency not found".to_string()));
         }
 
         info!(
@@ -325,7 +315,10 @@ impl TaskService {
     }
 
     /// Get all dependencies for a task
-    pub async fn get_task_dependencies(&self, task_id: i64) -> Result<Vec<TaskDependency>, DevErpError> {
+    pub async fn get_task_dependencies(
+        &self,
+        task_id: i64,
+    ) -> Result<Vec<TaskDependency>, DevErpError> {
         debug!("Fetching dependencies for task {}", task_id);
 
         let dependencies = self.dependency_repo.get_dependencies(task_id).await?;
@@ -340,7 +333,10 @@ impl TaskService {
     }
 
     /// Get all tasks that depend on a specific task
-    pub async fn get_task_dependents(&self, task_id: i64) -> Result<Vec<TaskDependency>, DevErpError> {
+    pub async fn get_task_dependents(
+        &self,
+        task_id: i64,
+    ) -> Result<Vec<TaskDependency>, DevErpError> {
         debug!("Fetching tasks that depend on task {}", task_id);
 
         let dependents = self.dependency_repo.get_dependents(task_id).await?;
@@ -460,10 +456,7 @@ mod tests {
 
         // Valid transitions
         assert!(service.is_valid_status_transition(&TaskStatus::Todo, &TaskStatus::InProgress));
-        assert!(service.is_valid_status_transition(
-            &TaskStatus::InProgress,
-            &TaskStatus::Review
-        ));
+        assert!(service.is_valid_status_transition(&TaskStatus::InProgress, &TaskStatus::Review));
         assert!(service.is_valid_status_transition(&TaskStatus::Review, &TaskStatus::Done));
         assert!(service.is_valid_status_transition(&TaskStatus::Done, &TaskStatus::InProgress)); // Reopening
 
@@ -518,7 +511,10 @@ mod tests {
         ) -> Result<bool, DevErpError> {
             unimplemented!()
         }
-        async fn get_dependencies(&self, _task_id: i64) -> Result<Vec<TaskDependency>, DevErpError> {
+        async fn get_dependencies(
+            &self,
+            _task_id: i64,
+        ) -> Result<Vec<TaskDependency>, DevErpError> {
             unimplemented!()
         }
         async fn get_dependents(&self, _task_id: i64) -> Result<Vec<TaskDependency>, DevErpError> {

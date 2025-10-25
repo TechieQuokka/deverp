@@ -911,22 +911,37 @@ mod tests {
 
     #[test]
     fn test_pagination_offset() {
-        let opts = PaginationOptions { page: 1, per_page: 10 };
+        let opts = PaginationOptions {
+            page: 1,
+            per_page: 10,
+        };
         assert_eq!(opts.offset(), 0);
 
-        let opts = PaginationOptions { page: 2, per_page: 10 };
+        let opts = PaginationOptions {
+            page: 2,
+            per_page: 10,
+        };
         assert_eq!(opts.offset(), 10);
 
-        let opts = PaginationOptions { page: 5, per_page: 20 };
+        let opts = PaginationOptions {
+            page: 5,
+            per_page: 20,
+        };
         assert_eq!(opts.offset(), 80);
     }
 
     #[test]
     fn test_pagination_limit() {
-        let opts = PaginationOptions { page: 1, per_page: 10 };
+        let opts = PaginationOptions {
+            page: 1,
+            per_page: 10,
+        };
         assert_eq!(opts.limit(), 10);
 
-        let opts = PaginationOptions { page: 2, per_page: 25 };
+        let opts = PaginationOptions {
+            page: 2,
+            per_page: 25,
+        };
         assert_eq!(opts.limit(), 25);
     }
 

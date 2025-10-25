@@ -30,8 +30,7 @@ impl PostgresProjectRepository {
 impl ProjectRepository for PostgresProjectRepository {
     async fn create(&self, project: CreateProject) -> Result<Project, DevErpError> {
         // Validate input
-        project.validate()
-            .map_err(|e| DevErpError::Validation(e))?;
+        project.validate().map_err(DevErpError::Validation)?;
 
         // Check for code uniqueness if code is provided
         if let Some(ref code) = project.code {
@@ -65,8 +64,14 @@ impl ProjectRepository for PostgresProjectRepository {
             project.name,
             project.description,
             project.code,
-            project.status.unwrap_or(crate::domain::project::entity::ProjectStatus::Planning).as_str(),
-            project.priority.unwrap_or(crate::domain::project::entity::Priority::Medium).as_str(),
+            project
+                .status
+                .unwrap_or(crate::domain::project::entity::ProjectStatus::Planning)
+                .as_str(),
+            project
+                .priority
+                .unwrap_or(crate::domain::project::entity::Priority::Medium)
+                .as_str(),
             project.start_date,
             project.end_date,
             project.repository_url,
@@ -172,7 +177,7 @@ impl ProjectRepository for PostgresProjectRepository {
                 created_at, updated_at, deleted_at
             FROM projects
             WHERE deleted_at IS NULL
-            "#
+            "#,
         );
 
         let mut conditions = Vec::new();
@@ -213,7 +218,11 @@ impl ProjectRepository for PostgresProjectRepository {
         }
 
         query.push_str(" ORDER BY created_at DESC");
-        query.push_str(&format!(" LIMIT ${} OFFSET ${}", param_count, param_count + 1));
+        query.push_str(&format!(
+            " LIMIT ${} OFFSET ${}",
+            param_count,
+            param_count + 1
+        ));
 
         // Execute query with dynamic binding
         let mut query_builder = sqlx::query_as::<_, Project>(&query);
@@ -249,9 +258,8 @@ impl ProjectRepository for PostgresProjectRepository {
     async fn count(&self, filter: ProjectFilter) -> Result<i64, DevErpError> {
         debug!("Counting projects with filter: {:?}", filter);
 
-        let mut query = String::from(
-            "SELECT COUNT(*) as count FROM projects WHERE deleted_at IS NULL"
-        );
+        let mut query =
+            String::from("SELECT COUNT(*) as count FROM projects WHERE deleted_at IS NULL");
 
         let mut conditions = Vec::new();
         let mut param_count = 1;
@@ -316,22 +324,22 @@ impl ProjectRepository for PostgresProjectRepository {
 
     async fn update(&self, project: UpdateProject) -> Result<Project, DevErpError> {
         // Validate input
-        project.validate()
-            .map_err(|e| DevErpError::Validation(e))?;
+        project.validate().map_err(DevErpError::Validation)?;
 
         // Check if project exists
-        let existing = self.find_by_id(project.id).await?
-            .ok_or_else(|| DevErpError::NotFound(format!("Project with id {} not found", project.id)))?;
+        let existing = self.find_by_id(project.id).await?.ok_or_else(|| {
+            DevErpError::NotFound(format!("Project with id {} not found", project.id))
+        })?;
 
         // Check for code uniqueness if code is being changed
         if let Some(ref new_code) = project.code {
-            if existing.code.as_ref() != Some(new_code) {
-                if self.code_exists(new_code, Some(project.id)).await? {
-                    return Err(DevErpError::Conflict(format!(
-                        "Project code '{}' already exists",
-                        new_code
-                    )));
-                }
+            if existing.code.as_ref() != Some(new_code)
+                && self.code_exists(new_code, Some(project.id)).await?
+            {
+                return Err(DevErpError::Conflict(format!(
+                    "Project code '{}' already exists",
+                    new_code
+                )));
             }
         }
 
@@ -415,12 +423,9 @@ impl ProjectRepository for PostgresProjectRepository {
     async fn delete(&self, id: i64) -> Result<bool, DevErpError> {
         warn!(project_id = %id, "Hard deleting project - this is irreversible");
 
-        let result = sqlx::query!(
-            "DELETE FROM projects WHERE id = $1",
-            id
-        )
-        .execute(&self.pool)
-        .await?;
+        let result = sqlx::query!("DELETE FROM projects WHERE id = $1", id)
+            .execute(&self.pool)
+            .await?;
 
         let deleted = result.rows_affected() > 0;
 

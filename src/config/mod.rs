@@ -2,4 +2,4 @@
 
 pub mod settings;
 
-pub use settings::{Settings, DatabaseConfig, LoggingConfig, ApplicationConfig};
+pub use settings::{ApplicationConfig, DatabaseConfig, LoggingConfig, Settings};

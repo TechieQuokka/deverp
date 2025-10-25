@@ -33,8 +33,9 @@ pub fn warning(message: &str) {
 
 /// Output data in JSON format
 pub fn output_json<T: Serialize + ?Sized>(data: &T) -> crate::Result<()> {
-    let json = serde_json::to_string_pretty(data)
-        .map_err(|e| crate::utils::error::DevErpError::Internal(format!("JSON serialization error: {}", e)))?;
+    let json = serde_json::to_string_pretty(data).map_err(|e| {
+        crate::utils::error::DevErpError::Internal(format!("JSON serialization error: {}", e))
+    })?;
     println!("{}", json);
     Ok(())
 }

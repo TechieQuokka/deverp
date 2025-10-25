@@ -1,7 +1,7 @@
 // Application settings
 
+use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
-use config::{Config, ConfigError, File, Environment};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Settings {

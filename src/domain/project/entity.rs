@@ -195,7 +195,7 @@ impl CreateProject {
 }
 
 /// Input for updating an existing project
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct UpdateProject {
     pub id: i64,
     pub name: Option<String>,
@@ -277,12 +277,30 @@ mod tests {
 
     #[test]
     fn test_project_status_from_str() {
-        assert_eq!("planning".parse::<ProjectStatus>().unwrap(), ProjectStatus::Planning);
-        assert_eq!("active".parse::<ProjectStatus>().unwrap(), ProjectStatus::Active);
-        assert_eq!("on_hold".parse::<ProjectStatus>().unwrap(), ProjectStatus::OnHold);
-        assert_eq!("completed".parse::<ProjectStatus>().unwrap(), ProjectStatus::Completed);
-        assert_eq!("archived".parse::<ProjectStatus>().unwrap(), ProjectStatus::Archived);
-        assert_eq!("cancelled".parse::<ProjectStatus>().unwrap(), ProjectStatus::Cancelled);
+        assert_eq!(
+            "planning".parse::<ProjectStatus>().unwrap(),
+            ProjectStatus::Planning
+        );
+        assert_eq!(
+            "active".parse::<ProjectStatus>().unwrap(),
+            ProjectStatus::Active
+        );
+        assert_eq!(
+            "on_hold".parse::<ProjectStatus>().unwrap(),
+            ProjectStatus::OnHold
+        );
+        assert_eq!(
+            "completed".parse::<ProjectStatus>().unwrap(),
+            ProjectStatus::Completed
+        );
+        assert_eq!(
+            "archived".parse::<ProjectStatus>().unwrap(),
+            ProjectStatus::Archived
+        );
+        assert_eq!(
+            "cancelled".parse::<ProjectStatus>().unwrap(),
+            ProjectStatus::Cancelled
+        );
         assert!("invalid".parse::<ProjectStatus>().is_err());
     }
 

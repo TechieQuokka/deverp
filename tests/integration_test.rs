@@ -4,28 +4,29 @@
 
 mod helpers;
 
-use std::sync::Arc;
-use helpers::*;
 use deverp::domain::project::entity::ProjectFilter;
 use deverp::domain::project::service::ProjectService;
 use deverp::domain::task::service::TaskService;
 use deverp::infrastructure::repositories::project_repo::PostgresProjectRepository;
 use deverp::infrastructure::repositories::task_repo::{
-    PostgresTaskRepository,
-    PostgresTaskDependencyRepository,
-    PostgresTaskCommentRepository,
+    PostgresTaskCommentRepository, PostgresTaskDependencyRepository, PostgresTaskRepository,
 };
+use helpers::*;
+use std::sync::Arc;
 
 /// Basic integration test: Create and retrieve a project
 #[tokio::test]
 async fn test_create_and_get_project() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
     let project_repo = Arc::new(PostgresProjectRepository::new(pool.clone()));
     let project_service = ProjectService::new(project_repo);
 
     // Create a project
     let create_input = create_test_project("Integration Test Project");
-    let created = project_service.create_project(create_input)
+    let created = project_service
+        .create_project(create_input)
         .await
         .expect("Failed to create project");
 
@@ -33,7 +34,8 @@ async fn test_create_and_get_project() {
     assert!(created.id > 0);
 
     // Retrieve the project
-    let retrieved = project_service.get_project(created.id)
+    let retrieved = project_service
+        .get_project(created.id)
         .await
         .expect("Failed to get project");
 
@@ -46,14 +48,17 @@ async fn test_create_and_get_project() {
 /// Test project listing with filters
 #[tokio::test]
 async fn test_list_projects() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
     let project_repo = Arc::new(PostgresProjectRepository::new(pool.clone()));
     let project_service = ProjectService::new(project_repo);
 
     // Create multiple projects
     for i in 1..=5 {
         let input = create_test_project(&format!("List Test Project {}", i));
-        project_service.create_project(input)
+        project_service
+            .create_project(input)
             .await
             .expect("Failed to create project");
     }
@@ -68,7 +73,8 @@ async fn test_list_projects() {
         limit: None,
     };
 
-    let projects = project_service.list_projects(filter)
+    let projects = project_service
+        .list_projects(filter)
         .await
         .expect("Failed to list projects");
 
@@ -80,7 +86,9 @@ async fn test_list_projects() {
 /// Test task creation and association with project
 #[tokio::test]
 async fn test_create_task_for_project() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
 
     let project_repo = Arc::new(PostgresProjectRepository::new(pool.clone()));
     let task_repo = Arc::new(PostgresTaskRepository::new(pool.clone()));
@@ -91,13 +99,15 @@ async fn test_create_task_for_project() {
     let task_service = TaskService::new(task_repo, dependency_repo, comment_repo);
 
     // Create a project
-    let project = project_service.create_project(create_test_project("Task Test Project"))
+    let project = project_service
+        .create_project(create_test_project("Task Test Project"))
         .await
         .expect("Failed to create project");
 
     // Create a task for the project
     let task_input = create_test_task(project.id, "Integration Test Task");
-    let task = task_service.create_task(task_input)
+    let task = task_service
+        .create_task(task_input)
         .await
         .expect("Failed to create task");
 
@@ -110,18 +120,22 @@ async fn test_create_task_for_project() {
 /// Test basic CRUD operations
 #[tokio::test]
 async fn test_project_crud() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
     let project_repo = Arc::new(PostgresProjectRepository::new(pool.clone()));
     let project_service = ProjectService::new(project_repo);
 
     // Create
     let create_input = create_test_project("CRUD Test Project");
-    let created = project_service.create_project(create_input)
+    let created = project_service
+        .create_project(create_input)
         .await
         .expect("Failed to create project");
 
     // Read
-    let read = project_service.get_project(created.id)
+    let read = project_service
+        .get_project(created.id)
         .await
         .expect("Failed to read project");
 
@@ -147,7 +161,8 @@ async fn test_project_crud() {
         metadata: None,
     };
 
-    let updated = project_service.update_project(update)
+    let updated = project_service
+        .update_project(update)
         .await
         .expect("Failed to update project");
 
@@ -155,7 +170,8 @@ async fn test_project_crud() {
     assert_eq!(updated.progress_percentage, Some(50));
 
     // Delete (soft delete)
-    let deleted = project_service.delete_project(created.id)
+    let deleted = project_service
+        .delete_project(created.id)
         .await
         .expect("Failed to delete project");
 

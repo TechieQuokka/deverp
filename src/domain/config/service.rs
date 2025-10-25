@@ -17,11 +17,9 @@ impl ConfigService {
     }
 
     pub async fn get_config(&self, key: &str) -> Result<Configuration, DevErpError> {
-        let config = self
-            .repository
-            .find_by_key(key)
-            .await?
-            .ok_or_else(|| DevErpError::NotFound(format!("Configuration key '{}' not found", key)))?;
+        let config = self.repository.find_by_key(key).await?.ok_or_else(|| {
+            DevErpError::NotFound(format!("Configuration key '{}' not found", key))
+        })?;
 
         Ok(config)
     }
@@ -37,11 +35,9 @@ impl ConfigService {
         description: Option<String>,
     ) -> Result<Configuration, DevErpError> {
         // First, get the existing configuration to check its data type
-        let existing = self
-            .repository
-            .find_by_key(key)
-            .await?
-            .ok_or_else(|| DevErpError::NotFound(format!("Configuration key '{}' not found", key)))?;
+        let existing = self.repository.find_by_key(key).await?.ok_or_else(|| {
+            DevErpError::NotFound(format!("Configuration key '{}' not found", key))
+        })?;
 
         // Validate the value based on data type
         self.validate_value(&value, &existing.data_type)?;
@@ -65,7 +61,7 @@ impl ConfigService {
         let result = sqlx::query!("SELECT 1 as test")
             .fetch_one(&self.pool)
             .await
-            .map_err(|e| DevErpError::Database(e))?;
+            .map_err(DevErpError::Database)?;
 
         if result.test == Some(1) {
             Ok("Database connection successful".to_string())
@@ -78,36 +74,40 @@ impl ConfigService {
         let result = sqlx::query!("SELECT version() as version")
             .fetch_one(&self.pool)
             .await
-            .map_err(|e| DevErpError::Database(e))?;
+            .map_err(DevErpError::Database)?;
 
         Ok(result.version.unwrap_or_else(|| "Unknown".to_string()))
     }
 
     pub async fn get_database_stats(&self) -> Result<DatabaseStats, DevErpError> {
         // Get table counts
-        let project_count = sqlx::query!("SELECT COUNT(*) as count FROM projects WHERE deleted_at IS NULL")
-            .fetch_one(&self.pool)
-            .await?
-            .count
-            .unwrap_or(0);
+        let project_count =
+            sqlx::query!("SELECT COUNT(*) as count FROM projects WHERE deleted_at IS NULL")
+                .fetch_one(&self.pool)
+                .await?
+                .count
+                .unwrap_or(0);
 
-        let task_count = sqlx::query!("SELECT COUNT(*) as count FROM tasks WHERE deleted_at IS NULL")
-            .fetch_one(&self.pool)
-            .await?
-            .count
-            .unwrap_or(0);
+        let task_count =
+            sqlx::query!("SELECT COUNT(*) as count FROM tasks WHERE deleted_at IS NULL")
+                .fetch_one(&self.pool)
+                .await?
+                .count
+                .unwrap_or(0);
 
-        let resource_count = sqlx::query!("SELECT COUNT(*) as count FROM resources WHERE deleted_at IS NULL")
-            .fetch_one(&self.pool)
-            .await?
-            .count
-            .unwrap_or(0);
+        let resource_count =
+            sqlx::query!("SELECT COUNT(*) as count FROM resources WHERE deleted_at IS NULL")
+                .fetch_one(&self.pool)
+                .await?
+                .count
+                .unwrap_or(0);
 
-        let timeline_count = sqlx::query!("SELECT COUNT(*) as count FROM timelines WHERE deleted_at IS NULL")
-            .fetch_one(&self.pool)
-            .await?
-            .count
-            .unwrap_or(0);
+        let timeline_count =
+            sqlx::query!("SELECT COUNT(*) as count FROM timelines WHERE deleted_at IS NULL")
+                .fetch_one(&self.pool)
+                .await?
+                .count
+                .unwrap_or(0);
 
         Ok(DatabaseStats {
             project_count,
@@ -121,10 +121,7 @@ impl ConfigService {
         match data_type {
             ConfigDataType::Integer => {
                 value.parse::<i64>().map_err(|_| {
-                    DevErpError::Validation(format!(
-                        "Value '{}' is not a valid integer",
-                        value
-                    ))
+                    DevErpError::Validation(format!("Value '{}' is not a valid integer", value))
                 })?;
             }
             ConfigDataType::Boolean => {
@@ -177,25 +174,25 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_validate_value_integer_valid() {
-        let service = create_test_service();
+    #[tokio::test]
+    async fn test_validate_value_integer_valid() {
+        let service = create_test_service().await;
         assert!(service
             .validate_value("42", &ConfigDataType::Integer)
             .is_ok());
     }
 
-    #[test]
-    fn test_validate_value_integer_invalid() {
-        let service = create_test_service();
+    #[tokio::test]
+    async fn test_validate_value_integer_invalid() {
+        let service = create_test_service().await;
         assert!(service
             .validate_value("not a number", &ConfigDataType::Integer)
             .is_err());
     }
 
-    #[test]
-    fn test_validate_value_boolean_valid() {
-        let service = create_test_service();
+    #[tokio::test]
+    async fn test_validate_value_boolean_valid() {
+        let service = create_test_service().await;
         assert!(service
             .validate_value("true", &ConfigDataType::Boolean)
             .is_ok());
@@ -204,43 +201,45 @@ mod tests {
             .is_ok());
     }
 
-    #[test]
-    fn test_validate_value_boolean_invalid() {
-        let service = create_test_service();
+    #[tokio::test]
+    async fn test_validate_value_boolean_invalid() {
+        let service = create_test_service().await;
         assert!(service
             .validate_value("yes", &ConfigDataType::Boolean)
             .is_err());
     }
 
-    #[test]
-    fn test_validate_value_json_valid() {
-        let service = create_test_service();
+    #[tokio::test]
+    async fn test_validate_value_json_valid() {
+        let service = create_test_service().await;
         assert!(service
             .validate_value(r#"{"key": "value"}"#, &ConfigDataType::Json)
             .is_ok());
     }
 
-    #[test]
-    fn test_validate_value_json_invalid() {
-        let service = create_test_service();
+    #[tokio::test]
+    async fn test_validate_value_json_invalid() {
+        let service = create_test_service().await;
         assert!(service
             .validate_value("not json", &ConfigDataType::Json)
             .is_err());
     }
 
-    #[test]
-    fn test_validate_value_string_always_valid() {
-        let service = create_test_service();
+    #[tokio::test]
+    async fn test_validate_value_string_always_valid() {
+        let service = create_test_service().await;
         assert!(service
             .validate_value("any value", &ConfigDataType::String)
             .is_ok());
     }
 
-    fn create_test_service() -> ConfigService {
+    async fn create_test_service() -> ConfigService {
         let mock_repo = MockConfigRepo::new();
-        // Create a dummy pool (won't be used in these tests)
-        let database_url = "postgres://localhost/test";
-        let pool = PgPool::connect_lazy(database_url).unwrap();
+        // Create a dummy pool with a test database URL
+        // Using connect_lazy means it won't actually connect until first query
+        let database_url = std::env::var("DATABASE_URL")
+            .unwrap_or_else(|_| "postgres://localhost/test".to_string());
+        let pool = PgPool::connect_lazy(&database_url).expect("Failed to create pool");
         ConfigService::new(Arc::new(mock_repo), pool)
     }
 }

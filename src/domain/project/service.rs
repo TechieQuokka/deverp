@@ -4,9 +4,9 @@ use std::sync::Arc;
 use tracing::{debug, info};
 use uuid::Uuid;
 
-use crate::utils::error::DevErpError;
 use super::entity::{CreateProject, Project, ProjectFilter, ProjectStatus, UpdateProject};
 use super::repository::ProjectRepository;
+use crate::utils::error::DevErpError;
 
 /// Project service containing business logic
 ///
@@ -180,8 +180,15 @@ impl ProjectService {
     /// # Business Logic
     /// - When status changes to Active, set actual_start_date if not set
     /// - When status changes to Completed, set actual_end_date if not set
-    pub async fn update_status(&self, id: i64, new_status: ProjectStatus) -> Result<Project, DevErpError> {
-        debug!("Service: Updating project {} status to {:?}", id, new_status);
+    pub async fn update_status(
+        &self,
+        id: i64,
+        new_status: ProjectStatus,
+    ) -> Result<Project, DevErpError> {
+        debug!(
+            "Service: Updating project {} status to {:?}",
+            id, new_status
+        );
 
         // Get current project
         let current = self.get_project(id).await?;
@@ -234,7 +241,7 @@ impl ProjectService {
     pub async fn update_progress(&self, id: i64, progress: i32) -> Result<Project, DevErpError> {
         if !(0..=100).contains(&progress) {
             return Err(DevErpError::Validation(
-                "Progress must be between 0 and 100".to_string()
+                "Progress must be between 0 and 100".to_string(),
             ));
         }
 
@@ -315,7 +322,10 @@ impl ProjectService {
     /// # Returns
     /// * `Ok(bool)` - true if deleted, false if not found
     pub async fn permanently_delete_project(&self, id: i64) -> Result<bool, DevErpError> {
-        debug!("Service: Permanently deleting project {} - THIS IS IRREVERSIBLE", id);
+        debug!(
+            "Service: Permanently deleting project {} - THIS IS IRREVERSIBLE",
+            id
+        );
 
         let deleted = self.repository.delete(id).await?;
 
@@ -357,7 +367,11 @@ impl ProjectService {
 
         let projects = self.repository.find_by_tag(tag).await?;
 
-        debug!("Service: Found {} projects with tag '{}'", projects.len(), tag);
+        debug!(
+            "Service: Found {} projects with tag '{}'",
+            projects.len(),
+            tag
+        );
 
         Ok(projects)
     }
@@ -375,7 +389,8 @@ impl ProjectService {
         let project = self.get_project(id).await?;
 
         // Calculate duration
-        let duration_days = if let (Some(start), Some(end)) = (project.start_date, project.end_date) {
+        let duration_days = if let (Some(start), Some(end)) = (project.start_date, project.end_date)
+        {
             Some((end - start).num_days())
         } else {
             None
@@ -383,7 +398,8 @@ impl ProjectService {
 
         // Calculate actual duration
         let actual_duration_days = if let (Some(start), Some(end)) =
-            (project.actual_start_date, project.actual_end_date) {
+            (project.actual_start_date, project.actual_end_date)
+        {
             Some((end - start).num_days())
         } else {
             None
@@ -428,35 +444,12 @@ pub struct ProjectStats {
     pub days_overdue: Option<i64>,
 }
 
-// Default implementation for UpdateProject to support partial updates
-impl Default for UpdateProject {
-    fn default() -> Self {
-        Self {
-            id: 0,
-            name: None,
-            description: None,
-            code: None,
-            status: None,
-            priority: None,
-            start_date: None,
-            end_date: None,
-            actual_start_date: None,
-            actual_end_date: None,
-            progress_percentage: None,
-            repository_url: None,
-            repository_branch: None,
-            tags: None,
-            metadata: None,
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use chrono::NaiveDate;
     use mockall::mock;
     use mockall::predicate::*;
-    use chrono::NaiveDate;
 
     // Mock repository for testing
     mock! {
@@ -554,28 +547,22 @@ mod tests {
         let mut test_project = create_test_project();
 
         // First call: get current project
-        mock_repo
-            .expect_find_by_id()
-            .times(1)
-            .returning(move |_| {
-                let mut p = create_test_project();
-                p.actual_start_date = None;
-                Ok(Some(p))
-            });
+        mock_repo.expect_find_by_id().times(1).returning(move |_| {
+            let mut p = create_test_project();
+            p.actual_start_date = None;
+            Ok(Some(p))
+        });
 
         // Second call: update project
         test_project.status = ProjectStatus::Active;
         test_project.actual_start_date = Some(chrono::Utc::now().date_naive());
 
-        mock_repo
-            .expect_update()
-            .times(1)
-            .returning(move |_| {
-                let mut p = create_test_project();
-                p.status = ProjectStatus::Active;
-                p.actual_start_date = Some(chrono::Utc::now().date_naive());
-                Ok(p)
-            });
+        mock_repo.expect_update().times(1).returning(move |_| {
+            let mut p = create_test_project();
+            p.status = ProjectStatus::Active;
+            p.actual_start_date = Some(chrono::Utc::now().date_naive());
+            Ok(p)
+        });
 
         let service = ProjectService::new(Arc::new(mock_repo));
         let result = service.update_status(1, ProjectStatus::Active).await;

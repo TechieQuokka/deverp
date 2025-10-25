@@ -399,7 +399,10 @@ impl ResourceRepository for PostgresResourceRepository {
         Ok(resources)
     }
 
-    async fn find_projects_using_resource(&self, resource_id: i64) -> Result<Vec<i64>, DevErpError> {
+    async fn find_projects_using_resource(
+        &self,
+        resource_id: i64,
+    ) -> Result<Vec<i64>, DevErpError> {
         let project_ids = sqlx::query_scalar!(
             r#"
             SELECT project_id

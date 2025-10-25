@@ -1,7 +1,7 @@
 // Connection pool management
 
-use sqlx::PgPool;
 use crate::Result;
+use sqlx::PgPool;
 
 pub struct ConnectionPool {
     pool: PgPool,
@@ -17,9 +17,7 @@ impl ConnectionPool {
     }
 
     pub async fn health_check(&self) -> Result<()> {
-        sqlx::query("SELECT 1")
-            .execute(&self.pool)
-            .await?;
+        sqlx::query("SELECT 1").execute(&self.pool).await?;
 
         Ok(())
     }

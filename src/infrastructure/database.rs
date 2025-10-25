@@ -1,7 +1,7 @@
 // Database connection management
 
-use sqlx::{postgres::PgPoolOptions, PgPool};
 use crate::{config::settings::DatabaseConfig, Result};
+use sqlx::{postgres::PgPoolOptions, PgPool};
 
 pub async fn establish_connection(config: &DatabaseConfig) -> Result<PgPool> {
     let pool = PgPoolOptions::new()
@@ -13,9 +13,7 @@ pub async fn establish_connection(config: &DatabaseConfig) -> Result<PgPool> {
 }
 
 pub async fn test_connection(pool: &PgPool) -> Result<()> {
-    sqlx::query("SELECT 1")
-        .execute(pool)
-        .await?;
+    sqlx::query("SELECT 1").execute(pool).await?;
 
     Ok(())
 }

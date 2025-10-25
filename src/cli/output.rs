@@ -1,8 +1,8 @@
 // Output formatting utilities for CLI
 
 use crate::utils::formatter;
-use serde::Serialize;
 use colored::Colorize;
+use serde::Serialize;
 
 /// Print paginated results with metadata
 pub struct PaginatedOutput<T> {
@@ -43,11 +43,7 @@ impl<T> PaginatedOutput<T> {
 
             let total_pages = (total as f64 / self.per_page as f64).ceil() as u32;
             if self.page < total_pages {
-                println!(
-                    "{} Use --page {} to see more",
-                    "→".cyan(),
-                    self.page + 1
-                );
+                println!("{} Use --page {} to see more", "→".cyan(), self.page + 1);
             }
         } else {
             println!(
@@ -92,10 +88,7 @@ impl OutputManager {
     }
 
     /// Output a paginated list
-    pub fn output_paginated<T: Serialize>(
-        &self,
-        output: &PaginatedOutput<T>,
-    ) -> crate::Result<()> {
+    pub fn output_paginated<T: Serialize>(&self, output: &PaginatedOutput<T>) -> crate::Result<()> {
         self.output_list(&output.items)?;
 
         if self.format != formatter::OutputFormat::Json {

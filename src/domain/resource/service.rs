@@ -201,7 +201,10 @@ impl ResourceService {
         &self,
         input: UpdateProjectResource,
     ) -> Result<ProjectResource, DevErpError> {
-        let link = self.repository.update_project_resource(input.clone()).await?;
+        let link = self
+            .repository
+            .update_project_resource(input.clone())
+            .await?;
         info!(
             project_id = %input.project_id,
             resource_id = %input.resource_id,
@@ -212,7 +215,10 @@ impl ResourceService {
     }
 
     /// Get all resources for a project
-    pub async fn get_project_resources(&self, project_id: i64) -> Result<Vec<Resource>, DevErpError> {
+    pub async fn get_project_resources(
+        &self,
+        project_id: i64,
+    ) -> Result<Vec<Resource>, DevErpError> {
         self.repository.find_by_project_id(project_id).await
     }
 
@@ -230,7 +236,9 @@ impl ResourceService {
     }
 
     /// Analyze resource utilization
-    pub async fn analyze_resource_utilization(&self) -> Result<Vec<ResourceUsageStats>, DevErpError> {
+    pub async fn analyze_resource_utilization(
+        &self,
+    ) -> Result<Vec<ResourceUsageStats>, DevErpError> {
         let stats = self.get_all_resource_usage().await?;
 
         // Sort by total projects descending
@@ -249,8 +257,8 @@ impl ResourceService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use async_trait::async_trait;
     use crate::domain::resource::entity::{ResourceStatus, ResourceType};
+    use async_trait::async_trait;
     use chrono::Utc;
     use mockall::mock;
     use mockall::predicate::*;

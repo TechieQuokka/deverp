@@ -46,8 +46,11 @@ pub trait TaskDependencyRepository: Send + Sync {
     ) -> Result<TaskDependency, DevErpError>;
 
     /// Remove a dependency between two tasks
-    async fn remove_dependency(&self, task_id: i64, depends_on_task_id: i64)
-        -> Result<bool, DevErpError>;
+    async fn remove_dependency(
+        &self,
+        task_id: i64,
+        depends_on_task_id: i64,
+    ) -> Result<bool, DevErpError>;
 
     /// Get all dependencies for a specific task
     async fn get_dependencies(&self, task_id: i64) -> Result<Vec<TaskDependency>, DevErpError>;

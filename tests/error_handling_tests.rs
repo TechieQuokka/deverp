@@ -1,23 +1,25 @@
 mod helpers;
 
-use std::sync::Arc;
 use chrono::NaiveDate;
-use deverp::domain::project::entity::{CreateProject, ProjectStatus, Priority};
+use deverp::domain::project::entity::{CreateProject, Priority, ProjectStatus};
 use deverp::domain::project::service::ProjectService;
-use deverp::domain::task::service::TaskService;
 use deverp::domain::resource::service::ResourceService;
+use deverp::domain::task::service::TaskService;
 use deverp::infrastructure::repositories::project_repo::PostgresProjectRepository;
-use deverp::infrastructure::repositories::task_repo::{
-    PostgresTaskRepository, PostgresTaskDependencyRepository, PostgresTaskCommentRepository
-};
 use deverp::infrastructure::repositories::resource_repo::PostgresResourceRepository;
+use deverp::infrastructure::repositories::task_repo::{
+    PostgresTaskCommentRepository, PostgresTaskDependencyRepository, PostgresTaskRepository,
+};
 use deverp::utils::error::DevErpError;
 use helpers::*;
+use std::sync::Arc;
 
 /// Test handling of invalid input validation
 #[tokio::test]
 async fn test_validation_errors() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
     let project_repo = Arc::new(PostgresProjectRepository::new(pool.clone()));
     let project_service = ProjectService::new(project_repo);
 
@@ -25,7 +27,7 @@ async fn test_validation_errors() {
 
     // Test 1: Empty project name should fail
     let invalid_project = CreateProject {
-        name: "".to_string(),  // Empty name
+        name: "".to_string(), // Empty name
         description: Some("Test".to_string()),
         code: None,
         status: Some(ProjectStatus::Planning),
@@ -50,7 +52,7 @@ async fn test_validation_errors() {
         status: Some(ProjectStatus::Planning),
         priority: Some(Priority::Medium),
         start_date: Some(NaiveDate::from_ymd_opt(2025, 12, 31).unwrap()),
-        end_date: Some(NaiveDate::from_ymd_opt(2025, 1, 1).unwrap()),  // End before start
+        end_date: Some(NaiveDate::from_ymd_opt(2025, 1, 1).unwrap()), // End before start
         repository_url: None,
         repository_branch: None,
         tags: None,
@@ -71,7 +73,9 @@ async fn test_validation_errors() {
 /// Test handling of not found errors
 #[tokio::test]
 async fn test_not_found_errors() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
 
     let project_repo = Arc::new(PostgresProjectRepository::new(pool.clone()));
     let task_repo = Arc::new(PostgresTaskRepository::new(pool.clone()));
@@ -89,14 +93,16 @@ async fn test_not_found_errors() {
 
     if let Err(e) = result {
         match e {
-            DevErpError::NotFound(_) => println!("✓ Not found error correctly returned for project"),
+            DevErpError::NotFound(_) => {
+                println!("✓ Not found error correctly returned for project")
+            }
             _ => panic!("Expected NotFound error, got: {:?}", e),
         }
     }
 
     // Test 2: Update non-existent project
     let fake_project_update = deverp::domain::project::entity::UpdateProject {
-        id: 999999,  // Non-existent ID
+        id: 999999, // Non-existent ID
         name: Some("Fake Project".to_string()),
         description: None,
         code: None,
@@ -134,7 +140,10 @@ async fn test_not_found_errors() {
     };
     let result = task_service.list_tasks(filter).await;
     // This should succeed but return empty list
-    assert!(result.is_ok(), "Listing tasks for non-existent project should return empty list");
+    assert!(
+        result.is_ok(),
+        "Listing tasks for non-existent project should return empty list"
+    );
     assert_eq!(result.unwrap().len(), 0, "Should return empty task list");
     println!("✓ Tasks for non-existent project correctly handled");
 
@@ -144,7 +153,9 @@ async fn test_not_found_errors() {
 /// Test handling of duplicate data
 #[tokio::test]
 async fn test_duplicate_errors() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
     let project_repo = Arc::new(PostgresProjectRepository::new(pool.clone()));
     let project_service = ProjectService::new(project_repo);
 
@@ -154,13 +165,14 @@ async fn test_duplicate_errors() {
     let mut project1 = create_test_project("Duplicate Test 1");
     project1.code = Some("DUP-001".to_string());
 
-    project_service.create_project(project1.clone())
+    project_service
+        .create_project(project1.clone())
         .await
         .expect("Failed to create first project");
 
     // Try to create another project with the same code
     let mut project2 = create_test_project("Duplicate Test 2");
-    project2.code = Some("DUP-001".to_string());  // Same code
+    project2.code = Some("DUP-001".to_string()); // Same code
 
     let result = project_service.create_project(project2).await;
     assert!(result.is_err(), "Duplicate project code should be rejected");
@@ -170,7 +182,10 @@ async fn test_duplicate_errors() {
             DevErpError::Conflict(_) | DevErpError::Database(_) => {
                 println!("✓ Duplicate code correctly rejected");
             }
-            _ => panic!("Expected Conflict or Database error for duplicate, got: {:?}", e),
+            _ => panic!(
+                "Expected Conflict or Database error for duplicate, got: {:?}",
+                e
+            ),
         }
     }
 
@@ -180,7 +195,9 @@ async fn test_duplicate_errors() {
 /// Test handling of referential integrity violations
 #[tokio::test]
 async fn test_referential_integrity() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
 
     let task_repo = Arc::new(PostgresTaskRepository::new(pool.clone()));
     let task_dependency_repo = Arc::new(PostgresTaskDependencyRepository::new(pool.clone()));
@@ -193,7 +210,10 @@ async fn test_referential_integrity() {
     let invalid_task = create_test_task(999999, "Orphan Task");
 
     let result = task_service.create_task(invalid_task).await;
-    assert!(result.is_err(), "Task with non-existent project should be rejected");
+    assert!(
+        result.is_err(),
+        "Task with non-existent project should be rejected"
+    );
 
     if let Err(e) = result {
         match e {
@@ -210,7 +230,9 @@ async fn test_referential_integrity() {
 /// Test transaction rollback on errors
 #[tokio::test]
 async fn test_transaction_rollback() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
 
     let project_repo = Arc::new(PostgresProjectRepository::new(pool.clone()));
     let task_repo = Arc::new(PostgresTaskRepository::new(pool.clone()));
@@ -223,12 +245,14 @@ async fn test_transaction_rollback() {
     println!("Testing transaction rollback...");
 
     // Create a project
-    let project = project_service.create_project(create_test_project("Transaction Test"))
+    let project = project_service
+        .create_project(create_test_project("Transaction Test"))
         .await
         .expect("Failed to create project");
 
     // Create a task
-    let task = task_service.create_task(create_test_task(project.id, "Task 1"))
+    let task = task_service
+        .create_task(create_test_task(project.id, "Task 1"))
         .await
         .expect("Failed to create task");
 
@@ -244,7 +268,8 @@ async fn test_transaction_rollback() {
         offset: None,
         limit: None,
     };
-    let tasks_before = task_service.list_tasks(filter_before)
+    let tasks_before = task_service
+        .list_tasks(filter_before)
         .await
         .expect("Failed to list tasks");
 
@@ -252,7 +277,8 @@ async fn test_transaction_rollback() {
 
     // Attempt an operation that should fail (e.g., circular dependency)
     // This should not affect the existing data
-    let task2 = task_service.create_task(create_test_task(project.id, "Task 2"))
+    let task2 = task_service
+        .create_task(create_test_task(project.id, "Task 2"))
         .await
         .expect("Failed to create task 2");
 
@@ -285,12 +311,16 @@ async fn test_transaction_rollback() {
         offset: None,
         limit: None,
     };
-    let tasks_after = task_service.list_tasks(filter_after)
+    let tasks_after = task_service
+        .list_tasks(filter_after)
         .await
         .expect("Failed to list tasks");
 
     // Tasks should still exist
-    assert!(tasks_after.len() >= 2, "Tasks should not be deleted after failed operation");
+    assert!(
+        tasks_after.len() >= 2,
+        "Tasks should not be deleted after failed operation"
+    );
 
     println!("✓ Data remains consistent after failed operation");
     println!("✅ Transaction rollback tests completed");
@@ -317,7 +347,9 @@ async fn test_connection_errors() {
 /// Test concurrent access conflicts
 #[tokio::test]
 async fn test_concurrent_conflicts() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
 
     let project_repo = Arc::new(PostgresProjectRepository::new(pool.clone()));
     let project_service = Arc::new(ProjectService::new(project_repo));
@@ -325,7 +357,8 @@ async fn test_concurrent_conflicts() {
     println!("Testing concurrent access...");
 
     // Create a project
-    let project = project_service.create_project(create_test_project("Concurrent Test"))
+    let project = project_service
+        .create_project(create_test_project("Concurrent Test"))
         .await
         .expect("Failed to create project");
 
@@ -381,7 +414,10 @@ async fn test_concurrent_conflicts() {
     let result2 = handle2.await.expect("Task 2 panicked");
 
     // At least one should succeed
-    assert!(result1.is_ok() || result2.is_ok(), "At least one concurrent update should succeed");
+    assert!(
+        result1.is_ok() || result2.is_ok(),
+        "At least one concurrent update should succeed"
+    );
 
     println!("✓ Concurrent updates handled correctly");
     println!("✅ Concurrent conflict tests completed");
@@ -390,7 +426,9 @@ async fn test_concurrent_conflicts() {
 /// Test resource cleanup after errors
 #[tokio::test]
 async fn test_resource_cleanup() {
-    let pool = setup_test_database().await.expect("Failed to setup test database");
+    let pool = setup_test_database()
+        .await
+        .expect("Failed to setup test database");
 
     let project_repo = Arc::new(PostgresProjectRepository::new(pool.clone()));
     let resource_repo = Arc::new(PostgresResourceRepository::new(pool.clone()));
@@ -401,23 +439,26 @@ async fn test_resource_cleanup() {
     println!("Testing resource cleanup after errors...");
 
     // Create a project and resource
-    let project = project_service.create_project(create_test_project("Cleanup Test"))
+    let project = project_service
+        .create_project(create_test_project("Cleanup Test"))
         .await
         .expect("Failed to create project");
 
-    let resource = resource_service.create_resource(create_test_resource("Test Resource"))
+    let resource = resource_service
+        .create_resource(create_test_resource("Test Resource"))
         .await
         .expect("Failed to create resource");
 
     // Link resource to project
     use deverp::domain::resource::entity::LinkResourceToProject;
-    resource_service.link_resource_to_project(LinkResourceToProject {
-        project_id: project.id,
-        resource_id: resource.id,
-        usage_notes: None,
-        version_used: None,
-        is_critical: Some(false),
-    })
+    resource_service
+        .link_resource_to_project(LinkResourceToProject {
+            project_id: project.id,
+            resource_id: resource.id,
+            usage_notes: None,
+            version_used: None,
+            is_critical: Some(false),
+        })
         .await
         .expect("Failed to link resource");
 
@@ -427,7 +468,10 @@ async fn test_resource_cleanup() {
 
     // Resource should still exist (soft delete)
     let resource_check = resource_service.get_resource(resource.id).await;
-    assert!(resource_check.is_ok(), "Resource should still exist after project deletion");
+    assert!(
+        resource_check.is_ok(),
+        "Resource should still exist after project deletion"
+    );
 
     println!("✓ Resources cleaned up correctly after project deletion");
     println!("✅ Resource cleanup tests completed");

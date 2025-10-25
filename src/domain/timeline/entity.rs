@@ -392,29 +392,68 @@ mod tests {
 
     #[test]
     fn test_timeline_type_from_str() {
-        assert_eq!("project".parse::<TimelineType>().unwrap(), TimelineType::Project);
-        assert_eq!("sprint".parse::<TimelineType>().unwrap(), TimelineType::Sprint);
-        assert_eq!("release".parse::<TimelineType>().unwrap(), TimelineType::Release);
-        assert_eq!("phase".parse::<TimelineType>().unwrap(), TimelineType::Phase);
+        assert_eq!(
+            "project".parse::<TimelineType>().unwrap(),
+            TimelineType::Project
+        );
+        assert_eq!(
+            "sprint".parse::<TimelineType>().unwrap(),
+            TimelineType::Sprint
+        );
+        assert_eq!(
+            "release".parse::<TimelineType>().unwrap(),
+            TimelineType::Release
+        );
+        assert_eq!(
+            "phase".parse::<TimelineType>().unwrap(),
+            TimelineType::Phase
+        );
         assert!("invalid".parse::<TimelineType>().is_err());
     }
 
     #[test]
     fn test_timeline_status_from_str() {
-        assert_eq!("planned".parse::<TimelineStatus>().unwrap(), TimelineStatus::Planned);
-        assert_eq!("active".parse::<TimelineStatus>().unwrap(), TimelineStatus::Active);
-        assert_eq!("completed".parse::<TimelineStatus>().unwrap(), TimelineStatus::Completed);
-        assert_eq!("cancelled".parse::<TimelineStatus>().unwrap(), TimelineStatus::Cancelled);
+        assert_eq!(
+            "planned".parse::<TimelineStatus>().unwrap(),
+            TimelineStatus::Planned
+        );
+        assert_eq!(
+            "active".parse::<TimelineStatus>().unwrap(),
+            TimelineStatus::Active
+        );
+        assert_eq!(
+            "completed".parse::<TimelineStatus>().unwrap(),
+            TimelineStatus::Completed
+        );
+        assert_eq!(
+            "cancelled".parse::<TimelineStatus>().unwrap(),
+            TimelineStatus::Cancelled
+        );
         assert!("invalid".parse::<TimelineStatus>().is_err());
     }
 
     #[test]
     fn test_milestone_status_from_str() {
-        assert_eq!("pending".parse::<MilestoneStatus>().unwrap(), MilestoneStatus::Pending);
-        assert_eq!("in_progress".parse::<MilestoneStatus>().unwrap(), MilestoneStatus::InProgress);
-        assert_eq!("completed".parse::<MilestoneStatus>().unwrap(), MilestoneStatus::Completed);
-        assert_eq!("missed".parse::<MilestoneStatus>().unwrap(), MilestoneStatus::Missed);
-        assert_eq!("cancelled".parse::<MilestoneStatus>().unwrap(), MilestoneStatus::Cancelled);
+        assert_eq!(
+            "pending".parse::<MilestoneStatus>().unwrap(),
+            MilestoneStatus::Pending
+        );
+        assert_eq!(
+            "in_progress".parse::<MilestoneStatus>().unwrap(),
+            MilestoneStatus::InProgress
+        );
+        assert_eq!(
+            "completed".parse::<MilestoneStatus>().unwrap(),
+            MilestoneStatus::Completed
+        );
+        assert_eq!(
+            "missed".parse::<MilestoneStatus>().unwrap(),
+            MilestoneStatus::Missed
+        );
+        assert_eq!(
+            "cancelled".parse::<MilestoneStatus>().unwrap(),
+            MilestoneStatus::Cancelled
+        );
         assert!("invalid".parse::<MilestoneStatus>().is_err());
     }
 

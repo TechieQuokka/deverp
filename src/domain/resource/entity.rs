@@ -196,7 +196,10 @@ mod tests {
 
     #[test]
     fn test_resource_type_from_str() {
-        assert_eq!("library".parse::<ResourceType>().unwrap(), ResourceType::Library);
+        assert_eq!(
+            "library".parse::<ResourceType>().unwrap(),
+            ResourceType::Library
+        );
         assert_eq!("API".parse::<ResourceType>().unwrap(), ResourceType::Api);
         assert!("invalid".parse::<ResourceType>().is_err());
     }
@@ -209,8 +212,14 @@ mod tests {
 
     #[test]
     fn test_resource_status_from_str() {
-        assert_eq!("active".parse::<ResourceStatus>().unwrap(), ResourceStatus::Active);
-        assert_eq!("DEPRECATED".parse::<ResourceStatus>().unwrap(), ResourceStatus::Deprecated);
+        assert_eq!(
+            "active".parse::<ResourceStatus>().unwrap(),
+            ResourceStatus::Active
+        );
+        assert_eq!(
+            "DEPRECATED".parse::<ResourceStatus>().unwrap(),
+            ResourceStatus::Deprecated
+        );
         assert!("invalid".parse::<ResourceStatus>().is_err());
     }
 }

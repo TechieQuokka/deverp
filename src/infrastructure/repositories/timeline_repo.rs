@@ -6,11 +6,10 @@ use tracing::{debug, info};
 
 use crate::domain::timeline::{
     entity::{
-        CreateTimeline, Timeline, TimelineFilter, UpdateTimeline,
-        CreateMilestone, Milestone, MilestoneFilter, UpdateMilestone,
-        TimelineStatus, TimelineType, MilestoneStatus,
+        CreateMilestone, CreateTimeline, Milestone, MilestoneFilter, MilestoneStatus, Timeline,
+        TimelineFilter, TimelineStatus, TimelineType, UpdateMilestone, UpdateTimeline,
     },
-    repository::{TimelineRepository, MilestoneRepository},
+    repository::{MilestoneRepository, TimelineRepository},
 };
 use crate::utils::error::DevErpError;
 
@@ -33,10 +32,12 @@ impl PostgresTimelineRepository {
 impl TimelineRepository for PostgresTimelineRepository {
     async fn create(&self, timeline: CreateTimeline) -> Result<Timeline, DevErpError> {
         // Validate input
-        timeline.validate()
-            .map_err(|e| DevErpError::Validation(e))?;
+        timeline.validate().map_err(DevErpError::Validation)?;
 
-        debug!("Creating timeline: {} for project_id: {}", timeline.name, timeline.project_id);
+        debug!(
+            "Creating timeline: {} for project_id: {}",
+            timeline.name, timeline.project_id
+        );
 
         let result = sqlx::query_as!(
             Timeline,
@@ -56,7 +57,10 @@ impl TimelineRepository for PostgresTimelineRepository {
             timeline.project_id,
             timeline.name,
             timeline.description,
-            timeline.timeline_type.unwrap_or(TimelineType::Project).as_str(),
+            timeline
+                .timeline_type
+                .unwrap_or(TimelineType::Project)
+                .as_str(),
             timeline.start_date,
             timeline.end_date,
             timeline.status.unwrap_or(TimelineStatus::Planned).as_str()
@@ -170,27 +174,29 @@ impl TimelineRepository for PostgresTimelineRepository {
 
         // For simplicity, reuse find_all and count in memory
         // This is acceptable for a CLI application with limited data
-        let timelines = self.find_all(TimelineFilter {
-            project_id: filter.project_id,
-            timeline_type: filter.timeline_type,
-            status: filter.status,
-            offset: None,
-            limit: None,
-        }).await?;
+        let timelines = self
+            .find_all(TimelineFilter {
+                project_id: filter.project_id,
+                timeline_type: filter.timeline_type,
+                status: filter.status,
+                offset: None,
+                limit: None,
+            })
+            .await?;
 
         Ok(timelines.len() as i64)
     }
 
     async fn update(&self, timeline: UpdateTimeline) -> Result<Timeline, DevErpError> {
         // Validate input
-        timeline.validate()
-            .map_err(|e| DevErpError::Validation(e))?;
+        timeline.validate().map_err(DevErpError::Validation)?;
 
         debug!("Updating timeline id: {}", timeline.id);
 
         // First, fetch the existing timeline
-        let _existing = self.find_by_id(timeline.id).await?
-            .ok_or_else(|| DevErpError::NotFound(format!("Timeline with id {} not found", timeline.id)))?;
+        let _existing = self.find_by_id(timeline.id).await?.ok_or_else(|| {
+            DevErpError::NotFound(format!("Timeline with id {} not found", timeline.id))
+        })?;
 
         // Update fields
         let result = sqlx::query_as!(
@@ -303,10 +309,12 @@ impl PostgresMilestoneRepository {
 impl MilestoneRepository for PostgresMilestoneRepository {
     async fn create(&self, milestone: CreateMilestone) -> Result<Milestone, DevErpError> {
         // Validate input
-        milestone.validate()
-            .map_err(|e| DevErpError::Validation(e))?;
+        milestone.validate().map_err(DevErpError::Validation)?;
 
-        debug!("Creating milestone: {} for timeline_id: {}", milestone.name, milestone.timeline_id);
+        debug!(
+            "Creating milestone: {} for timeline_id: {}",
+            milestone.name, milestone.timeline_id
+        );
 
         let result = sqlx::query_as!(
             Milestone,
@@ -329,7 +337,10 @@ impl MilestoneRepository for PostgresMilestoneRepository {
             milestone.name,
             milestone.description,
             milestone.target_date,
-            milestone.status.unwrap_or(MilestoneStatus::Pending).as_str(),
+            milestone
+                .status
+                .unwrap_or(MilestoneStatus::Pending)
+                .as_str(),
             milestone.completion_percentage.unwrap_or(0),
             milestone.metadata
         )
@@ -469,27 +480,29 @@ impl MilestoneRepository for PostgresMilestoneRepository {
         debug!("Counting milestones with filter: {:?}", filter);
 
         // For simplicity, reuse find_all and count in memory
-        let milestones = self.find_all(MilestoneFilter {
-            timeline_id: filter.timeline_id,
-            project_id: filter.project_id,
-            status: filter.status,
-            offset: None,
-            limit: None,
-        }).await?;
+        let milestones = self
+            .find_all(MilestoneFilter {
+                timeline_id: filter.timeline_id,
+                project_id: filter.project_id,
+                status: filter.status,
+                offset: None,
+                limit: None,
+            })
+            .await?;
 
         Ok(milestones.len() as i64)
     }
 
     async fn update(&self, milestone: UpdateMilestone) -> Result<Milestone, DevErpError> {
         // Validate input
-        milestone.validate()
-            .map_err(|e| DevErpError::Validation(e))?;
+        milestone.validate().map_err(DevErpError::Validation)?;
 
         debug!("Updating milestone id: {}", milestone.id);
 
         // First, fetch the existing milestone
-        let _existing = self.find_by_id(milestone.id).await?
-            .ok_or_else(|| DevErpError::NotFound(format!("Milestone with id {} not found", milestone.id)))?;
+        let _existing = self.find_by_id(milestone.id).await?.ok_or_else(|| {
+            DevErpError::NotFound(format!("Milestone with id {} not found", milestone.id))
+        })?;
 
         // Update fields
         let result = sqlx::query_as!(

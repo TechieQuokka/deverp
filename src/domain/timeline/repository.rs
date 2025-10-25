@@ -2,11 +2,11 @@
 
 use async_trait::async_trait;
 
-use crate::utils::error::DevErpError;
 use super::entity::{
-    CreateTimeline, Timeline, TimelineFilter, UpdateTimeline,
-    CreateMilestone, Milestone, MilestoneFilter, UpdateMilestone,
+    CreateMilestone, CreateTimeline, Milestone, MilestoneFilter, Timeline, TimelineFilter,
+    UpdateMilestone, UpdateTimeline,
 };
+use crate::utils::error::DevErpError;
 
 /// Repository trait for timeline data access
 ///

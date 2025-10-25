@@ -31,7 +31,9 @@ pub struct Task {
 /// Task status enum
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq, Eq)]
 #[sqlx(type_name = "VARCHAR", rename_all = "snake_case")]
+#[derive(Default)]
 pub enum TaskStatus {
+    #[default]
     Todo,
     InProgress,
     Blocked,
@@ -39,12 +41,6 @@ pub enum TaskStatus {
     Testing,
     Done,
     Cancelled,
-}
-
-impl Default for TaskStatus {
-    fn default() -> Self {
-        TaskStatus::Todo
-    }
 }
 
 impl std::fmt::Display for TaskStatus {
@@ -81,17 +77,13 @@ impl std::str::FromStr for TaskStatus {
 /// Task priority enum
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq, Eq)]
 #[sqlx(type_name = "VARCHAR", rename_all = "lowercase")]
+#[derive(Default)]
 pub enum TaskPriority {
     Low,
+    #[default]
     Medium,
     High,
     Critical,
-}
-
-impl Default for TaskPriority {
-    fn default() -> Self {
-        TaskPriority::Medium
-    }
 }
 
 impl std::fmt::Display for TaskPriority {
@@ -122,7 +114,9 @@ impl std::str::FromStr for TaskPriority {
 /// Task type enum
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq, Eq)]
 #[sqlx(type_name = "VARCHAR", rename_all = "lowercase")]
+#[derive(Default)]
 pub enum TaskType {
+    #[default]
     Feature,
     Bug,
     Enhancement,
@@ -130,12 +124,6 @@ pub enum TaskType {
     Docs,
     Test,
     Chore,
-}
-
-impl Default for TaskType {
-    fn default() -> Self {
-        TaskType::Feature
-    }
 }
 
 impl std::fmt::Display for TaskType {
@@ -181,17 +169,13 @@ pub struct TaskDependency {
 /// Dependency type enum
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type, PartialEq, Eq)]
 #[sqlx(type_name = "VARCHAR", rename_all = "snake_case")]
+#[derive(Default)]
 pub enum DependencyType {
+    #[default]
     FinishToStart,
     StartToStart,
     FinishToFinish,
     StartToFinish,
-}
-
-impl Default for DependencyType {
-    fn default() -> Self {
-        DependencyType::FinishToStart
-    }
 }
 
 impl std::fmt::Display for DependencyType {
@@ -400,10 +384,7 @@ mod tests {
 
     #[test]
     fn test_task_type_parsing() {
-        assert_eq!(
-            "feature".parse::<TaskType>().unwrap(),
-            TaskType::Feature
-        );
+        assert_eq!("feature".parse::<TaskType>().unwrap(), TaskType::Feature);
         assert_eq!("bug".parse::<TaskType>().unwrap(), TaskType::Bug);
         assert!("invalid".parse::<TaskType>().is_err());
     }

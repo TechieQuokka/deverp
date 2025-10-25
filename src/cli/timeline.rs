@@ -1,26 +1,26 @@
 // Timeline CLI commands implementation
 
-use std::sync::Arc;
-use chrono::{NaiveDate, Local};
+use chrono::{Local, NaiveDate};
 use colored::Colorize;
+use std::sync::Arc;
 
 use super::commands::{
-    TimelineCommand, CreateTimelineArgs, ListTimelineArgs, ShowTimelineArgs,
-    UpdateTimelineArgs, DeleteTimelineArgs, AddMilestoneArgs, UpdateMilestoneArgs,
-    CompleteMilestoneArgs, OutputFormat,
+    AddMilestoneArgs, CompleteMilestoneArgs, CreateTimelineArgs, DeleteTimelineArgs,
+    ListTimelineArgs, OutputFormat, ShowTimelineArgs, TimelineCommand, UpdateMilestoneArgs,
+    UpdateTimelineArgs,
 };
-use super::output::{section_title, summary_line, confirm, empty_state};
+use super::output::{confirm, empty_state, section_title, summary_line};
 use crate::config::settings::Settings;
 use crate::domain::timeline::{
     entity::{
-        CreateTimeline, UpdateTimeline, TimelineFilter, TimelineType, TimelineStatus,
-        CreateMilestone, UpdateMilestone, MilestoneStatus,
+        CreateMilestone, CreateTimeline, MilestoneStatus, TimelineFilter, TimelineStatus,
+        TimelineType, UpdateMilestone, UpdateTimeline,
     },
     service::TimelineService,
 };
 use crate::infrastructure::{
     database,
-    repositories::timeline_repo::{PostgresTimelineRepository, PostgresMilestoneRepository},
+    repositories::timeline_repo::{PostgresMilestoneRepository, PostgresTimelineRepository},
 };
 use crate::utils::error::DevErpError;
 use crate::Result;
@@ -45,7 +45,10 @@ async fn create_service() -> Result<TimelineService> {
     let pool = database::establish_connection(&settings.database).await?;
     let timeline_repository = Arc::new(PostgresTimelineRepository::new(pool.clone()));
     let milestone_repository = Arc::new(PostgresMilestoneRepository::new(pool));
-    Ok(TimelineService::new(timeline_repository, milestone_repository))
+    Ok(TimelineService::new(
+        timeline_repository,
+        milestone_repository,
+    ))
 }
 
 /// Handle timeline create command
@@ -53,27 +56,36 @@ async fn handle_create(args: CreateTimelineArgs) -> Result<()> {
     let service = create_service().await?;
 
     // Parse timeline type
-    let timeline_type = args.timeline_type.parse::<TimelineType>()
-        .map_err(|e| DevErpError::Validation(e))?;
+    let timeline_type = args
+        .timeline_type
+        .parse::<TimelineType>()
+        .map_err(DevErpError::Validation)?;
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<TimelineStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<TimelineStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse dates
-    let start_date = NaiveDate::parse_from_str(&args.start_date, "%Y-%m-%d")
-        .map_err(|_| DevErpError::Validation(
-            format!("Invalid start date format: {}. Expected YYYY-MM-DD", args.start_date)
-        ))?;
+    let start_date = NaiveDate::parse_from_str(&args.start_date, "%Y-%m-%d").map_err(|_| {
+        DevErpError::Validation(format!(
+            "Invalid start date format: {}. Expected YYYY-MM-DD",
+            args.start_date
+        ))
+    })?;
 
-    let end_date = NaiveDate::parse_from_str(&args.end_date, "%Y-%m-%d")
-        .map_err(|_| DevErpError::Validation(
-            format!("Invalid end date format: {}. Expected YYYY-MM-DD", args.end_date)
-        ))?;
+    let end_date = NaiveDate::parse_from_str(&args.end_date, "%Y-%m-%d").map_err(|_| {
+        DevErpError::Validation(format!(
+            "Invalid end date format: {}. Expected YYYY-MM-DD",
+            args.end_date
+        ))
+    })?;
 
     // Create timeline input
     let input = CreateTimeline {
@@ -96,11 +108,20 @@ async fn handle_create(args: CreateTimelineArgs) -> Result<()> {
     println!("{}: {}", "Project ID".bright_cyan(), timeline.project_id);
     println!("{}: {}", "Type".bright_cyan(), timeline.timeline_type);
     println!("{}: {}", "Status".bright_cyan(), timeline.status);
-    println!("{}: {} to {}", "Period".bright_cyan(), timeline.start_date, timeline.end_date);
+    println!(
+        "{}: {} to {}",
+        "Period".bright_cyan(),
+        timeline.start_date,
+        timeline.end_date
+    );
     if let Some(desc) = &timeline.description {
         println!("{}: {}", "Description".bright_cyan(), desc);
     }
-    println!("{}: {}", "Created".bright_cyan(), timeline.created_at.format("%Y-%m-%d %H:%M:%S"));
+    println!(
+        "{}: {}",
+        "Created".bright_cyan(),
+        timeline.created_at.format("%Y-%m-%d %H:%M:%S")
+    );
 
     Ok(())
 }
@@ -111,16 +132,22 @@ async fn handle_list(args: ListTimelineArgs) -> Result<()> {
 
     // Parse timeline type if provided
     let timeline_type = if let Some(type_str) = args.timeline_type {
-        Some(type_str.parse::<TimelineType>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            type_str
+                .parse::<TimelineType>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<TimelineStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<TimelineStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
@@ -148,16 +175,25 @@ async fn handle_list(args: ListTimelineArgs) -> Result<()> {
 
     for timeline in timelines {
         println!("  {} {}", "●".bright_green(), timeline.name.bold());
-        println!("    {}: {} | {}: {}",
-            "ID".dimmed(), timeline.id,
-            "Project".dimmed(), timeline.project_id
+        println!(
+            "    {}: {} | {}: {}",
+            "ID".dimmed(),
+            timeline.id,
+            "Project".dimmed(),
+            timeline.project_id
         );
-        println!("    {}: {} | {}: {}",
-            "Type".dimmed(), timeline.timeline_type,
-            "Status".dimmed(), timeline.status
+        println!(
+            "    {}: {} | {}: {}",
+            "Type".dimmed(),
+            timeline.timeline_type,
+            "Status".dimmed(),
+            timeline.status
         );
-        println!("    {}: {} to {}",
-            "Period".dimmed(), timeline.start_date, timeline.end_date
+        println!(
+            "    {}: {} to {}",
+            "Period".dimmed(),
+            timeline.start_date,
+            timeline.end_date
         );
         if let Some(desc) = &timeline.description {
             let short_desc = if desc.len() > 60 {
@@ -191,7 +227,12 @@ async fn handle_show(args: ShowTimelineArgs) -> Result<()> {
     println!("{}: {}", "Project ID".bright_cyan(), timeline.project_id);
     println!("{}: {}", "Type".bright_cyan(), timeline.timeline_type);
     println!("{}: {}", "Status".bright_cyan(), timeline.status);
-    println!("{}: {} to {}", "Period".bright_cyan(), timeline.start_date, timeline.end_date);
+    println!(
+        "{}: {} to {}",
+        "Period".bright_cyan(),
+        timeline.start_date,
+        timeline.end_date
+    );
 
     if let Some(desc) = &timeline.description {
         println!();
@@ -200,8 +241,16 @@ async fn handle_show(args: ShowTimelineArgs) -> Result<()> {
     }
 
     println!();
-    println!("{}: {}", "Created".bright_cyan(), timeline.created_at.format("%Y-%m-%d %H:%M:%S"));
-    println!("{}: {}", "Updated".bright_cyan(), timeline.updated_at.format("%Y-%m-%d %H:%M:%S"));
+    println!(
+        "{}: {}",
+        "Created".bright_cyan(),
+        timeline.created_at.format("%Y-%m-%d %H:%M:%S")
+    );
+    println!(
+        "{}: {}",
+        "Updated".bright_cyan(),
+        timeline.updated_at.format("%Y-%m-%d %H:%M:%S")
+    );
 
     // Display milestones
     if !milestones.is_empty() {
@@ -218,13 +267,19 @@ async fn handle_show(args: ShowTimelineArgs) -> Result<()> {
             };
 
             println!("  {} {}", status_color, milestone.name.bold());
-            println!("    {}: {} | {}: {}%",
-                "ID".dimmed(), milestone.id,
-                "Progress".dimmed(), milestone.completion_percentage
+            println!(
+                "    {}: {} | {}: {}%",
+                "ID".dimmed(),
+                milestone.id,
+                "Progress".dimmed(),
+                milestone.completion_percentage
             );
-            println!("    {}: {} | {}: {}",
-                "Target".dimmed(), milestone.target_date,
-                "Status".dimmed(), milestone.status
+            println!(
+                "    {}: {} | {}: {}",
+                "Target".dimmed(),
+                milestone.target_date,
+                "Status".dimmed(),
+                milestone.status
             );
             if let Some(actual) = milestone.actual_date {
                 println!("    {}: {}", "Completed".dimmed(), actual);
@@ -250,35 +305,49 @@ async fn handle_update(args: UpdateTimelineArgs) -> Result<()> {
 
     // Parse timeline type if provided
     let timeline_type = if let Some(type_str) = args.timeline_type {
-        Some(type_str.parse::<TimelineType>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            type_str
+                .parse::<TimelineType>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<TimelineStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<TimelineStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse dates if provided
     let start_date = if let Some(date_str) = args.start_date {
-        Some(NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(
-                format!("Invalid start date format: {}. Expected YYYY-MM-DD", date_str)
-            ))?)
+        Some(
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+                DevErpError::Validation(format!(
+                    "Invalid start date format: {}. Expected YYYY-MM-DD",
+                    date_str
+                ))
+            })?,
+        )
     } else {
         None
     };
 
     let end_date = if let Some(date_str) = args.end_date {
-        Some(NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(
-                format!("Invalid end date format: {}. Expected YYYY-MM-DD", date_str)
-            ))?)
+        Some(
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+                DevErpError::Validation(format!(
+                    "Invalid end date format: {}. Expected YYYY-MM-DD",
+                    date_str
+                ))
+            })?,
+        )
     } else {
         None
     };
@@ -301,7 +370,11 @@ async fn handle_update(args: UpdateTimelineArgs) -> Result<()> {
     section_title("Timeline Updated");
     println!("{}: {}", "ID".bright_cyan(), timeline.id);
     println!("{}: {}", "Name".bright_cyan(), timeline.name.bold());
-    println!("{}: {}", "Updated".bright_cyan(), timeline.updated_at.format("%Y-%m-%d %H:%M:%S"));
+    println!(
+        "{}: {}",
+        "Updated".bright_cyan(),
+        timeline.updated_at.format("%Y-%m-%d %H:%M:%S")
+    );
 
     Ok(())
 }
@@ -315,7 +388,10 @@ async fn handle_delete(args: DeleteTimelineArgs) -> Result<()> {
 
     // Confirm deletion
     if !args.confirm {
-        let confirmed = confirm(&format!("Are you sure you want to delete timeline '{}'?", timeline.name));
+        let confirmed = confirm(&format!(
+            "Are you sure you want to delete timeline '{}'?",
+            timeline.name
+        ));
         if !confirmed {
             println!("Deletion cancelled.");
             return Ok(());
@@ -325,7 +401,10 @@ async fn handle_delete(args: DeleteTimelineArgs) -> Result<()> {
     // Delete timeline
     service.delete_timeline(args.id).await?;
 
-    summary_line("Timeline Deleted", &format!("'{}' deleted successfully", timeline.name));
+    summary_line(
+        "Timeline Deleted",
+        &format!("'{}' deleted successfully", timeline.name),
+    );
 
     Ok(())
 }
@@ -336,17 +415,22 @@ async fn handle_add_milestone(args: AddMilestoneArgs) -> Result<()> {
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<MilestoneStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<MilestoneStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse target date
-    let target_date = NaiveDate::parse_from_str(&args.target_date, "%Y-%m-%d")
-        .map_err(|_| DevErpError::Validation(
-            format!("Invalid target date format: {}. Expected YYYY-MM-DD", args.target_date)
-        ))?;
+    let target_date = NaiveDate::parse_from_str(&args.target_date, "%Y-%m-%d").map_err(|_| {
+        DevErpError::Validation(format!(
+            "Invalid target date format: {}. Expected YYYY-MM-DD",
+            args.target_date
+        ))
+    })?;
 
     // Create milestone input
     let input = CreateMilestone {
@@ -373,7 +457,11 @@ async fn handle_add_milestone(args: AddMilestoneArgs) -> Result<()> {
     if let Some(desc) = &milestone.description {
         println!("{}: {}", "Description".bright_cyan(), desc);
     }
-    println!("{}: {}", "Created".bright_cyan(), milestone.created_at.format("%Y-%m-%d %H:%M:%S"));
+    println!(
+        "{}: {}",
+        "Created".bright_cyan(),
+        milestone.created_at.format("%Y-%m-%d %H:%M:%S")
+    );
 
     Ok(())
 }
@@ -384,38 +472,49 @@ async fn handle_update_milestone(args: UpdateMilestoneArgs) -> Result<()> {
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<MilestoneStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<MilestoneStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse target date if provided
     let target_date = if let Some(date_str) = args.target_date {
-        Some(NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(
-                format!("Invalid target date format: {}. Expected YYYY-MM-DD", date_str)
-            ))?)
+        Some(
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+                DevErpError::Validation(format!(
+                    "Invalid target date format: {}. Expected YYYY-MM-DD",
+                    date_str
+                ))
+            })?,
+        )
     } else {
         None
     };
 
     // Parse actual date if provided
     let actual_date = if let Some(date_str) = args.actual_date {
-        Some(NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(
-                format!("Invalid actual date format: {}. Expected YYYY-MM-DD", date_str)
-            ))?)
+        Some(
+            NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+                DevErpError::Validation(format!(
+                    "Invalid actual date format: {}. Expected YYYY-MM-DD",
+                    date_str
+                ))
+            })?,
+        )
     } else {
         None
     };
 
     // Validate completion percentage
     if let Some(pct) = args.completion_percentage {
-        if pct < 0 || pct > 100 {
+        if !(0..=100).contains(&pct) {
             return Err(DevErpError::Validation(
-                "Completion percentage must be between 0 and 100".to_string()
-            ).into());
+                "Completion percentage must be between 0 and 100".to_string(),
+            ));
         }
     }
 
@@ -438,9 +537,17 @@ async fn handle_update_milestone(args: UpdateMilestoneArgs) -> Result<()> {
     section_title("Milestone Updated");
     println!("{}: {}", "ID".bright_cyan(), milestone.id);
     println!("{}: {}", "Name".bright_cyan(), milestone.name.bold());
-    println!("{}: {}%", "Progress".bright_cyan(), milestone.completion_percentage);
+    println!(
+        "{}: {}%",
+        "Progress".bright_cyan(),
+        milestone.completion_percentage
+    );
     println!("{}: {}", "Status".bright_cyan(), milestone.status);
-    println!("{}: {}", "Updated".bright_cyan(), milestone.updated_at.format("%Y-%m-%d %H:%M:%S"));
+    println!(
+        "{}: {}",
+        "Updated".bright_cyan(),
+        milestone.updated_at.format("%Y-%m-%d %H:%M:%S")
+    );
 
     Ok(())
 }
@@ -451,10 +558,12 @@ async fn handle_complete_milestone(args: CompleteMilestoneArgs) -> Result<()> {
 
     // Parse actual date or use today
     let actual_date = if let Some(date_str) = args.actual_date {
-        NaiveDate::parse_from_str(&date_str, "%Y-%m-%d")
-            .map_err(|_| DevErpError::Validation(
-                format!("Invalid actual date format: {}. Expected YYYY-MM-DD", date_str)
-            ))?
+        NaiveDate::parse_from_str(&date_str, "%Y-%m-%d").map_err(|_| {
+            DevErpError::Validation(format!(
+                "Invalid actual date format: {}. Expected YYYY-MM-DD",
+                date_str
+            ))
+        })?
     } else {
         Local::now().naive_local().date()
     };
@@ -477,7 +586,11 @@ async fn handle_complete_milestone(args: CompleteMilestoneArgs) -> Result<()> {
     section_title("Milestone Completed");
     println!("{}: {}", "ID".bright_cyan(), milestone.id);
     println!("{}: {}", "Name".bright_cyan(), milestone.name.bold());
-    println!("{}: {}", "Completed On".bright_cyan(), milestone.actual_date.unwrap());
+    println!(
+        "{}: {}",
+        "Completed On".bright_cyan(),
+        milestone.actual_date.unwrap()
+    );
     println!("{}: {}", "Status".bright_cyan(), milestone.status);
 
     Ok(())

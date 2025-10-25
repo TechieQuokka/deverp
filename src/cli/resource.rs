@@ -1,18 +1,20 @@
 // Resource CLI commands implementation
 
-use std::sync::Arc;
 use colored::Colorize;
+use std::sync::Arc;
 use uuid::Uuid;
 
 use super::commands::{
-    ResourceCommand, CreateResourceArgs, ListResourceArgs, ShowResourceArgs,
-    UpdateResourceArgs, DeleteResourceArgs, LinkResourceArgs, UnlinkResourceArgs,
-    UsageResourceArgs, OutputFormat,
+    CreateResourceArgs, DeleteResourceArgs, LinkResourceArgs, ListResourceArgs, OutputFormat,
+    ResourceCommand, ShowResourceArgs, UnlinkResourceArgs, UpdateResourceArgs, UsageResourceArgs,
 };
-use super::output::{section_title, summary_line, confirm, empty_state};
+use super::output::{confirm, empty_state, section_title, summary_line};
 use crate::config::settings::Settings;
 use crate::domain::resource::{
-    entity::{CreateResource, UpdateResource, ResourceFilter, ResourceType, ResourceStatus, LinkResourceToProject},
+    entity::{
+        CreateResource, LinkResourceToProject, ResourceFilter, ResourceStatus, ResourceType,
+        UpdateResource,
+    },
     service::ResourceService,
 };
 use crate::infrastructure::{database, repositories::resource_repo::PostgresResourceRepository};
@@ -46,20 +48,26 @@ async fn handle_create(args: CreateResourceArgs) -> Result<()> {
     let service = create_service().await?;
 
     // Parse resource type
-    let resource_type = args.resource_type.parse::<ResourceType>()
-        .map_err(|e| DevErpError::Validation(e))?;
+    let resource_type = args
+        .resource_type
+        .parse::<ResourceType>()
+        .map_err(DevErpError::Validation)?;
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<ResourceStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<ResourceStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse tags if provided
     let tags = args.tags.map(|tags_str| {
-        tags_str.split(',')
+        tags_str
+            .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect()
@@ -97,7 +105,11 @@ async fn handle_create(args: CreateResourceArgs) -> Result<()> {
     if let Some(url) = &resource.url {
         println!("{}: {}", "URL".bright_cyan(), url);
     }
-    println!("{}: {}", "Created".bright_cyan(), resource.created_at.format("%Y-%m-%d %H:%M:%S"));
+    println!(
+        "{}: {}",
+        "Created".bright_cyan(),
+        resource.created_at.format("%Y-%m-%d %H:%M:%S")
+    );
 
     Ok(())
 }
@@ -108,23 +120,30 @@ async fn handle_list(args: ListResourceArgs) -> Result<()> {
 
     // Parse resource type if provided
     let resource_type = if let Some(type_str) = args.resource_type {
-        Some(type_str.parse::<ResourceType>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            type_str
+                .parse::<ResourceType>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<ResourceStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<ResourceStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse tags if provided
     let tags = args.tags.map(|tags_str| {
-        tags_str.split(',')
+        tags_str
+            .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect()
@@ -154,14 +173,23 @@ async fn handle_list(args: ListResourceArgs) -> Result<()> {
 
     for resource in resources {
         println!("  {} {}", "●".bright_green(), resource.name.bold());
-        println!("    {}: {} | {}: {}",
-            "ID".dimmed(), resource.id,
-            "UUID".dimmed(), resource.uuid
+        println!(
+            "    {}: {} | {}: {}",
+            "ID".dimmed(),
+            resource.id,
+            "UUID".dimmed(),
+            resource.uuid
         );
-        println!("    {}: {} | {}: {}",
-            "Type".dimmed(), resource.resource_type,
+        println!(
+            "    {}: {} | {}: {}",
+            "Type".dimmed(),
+            resource.resource_type,
             "Status".dimmed(),
-            resource.status.as_ref().map(|s| format!("{}", s)).unwrap_or_else(|| "active".to_string())
+            resource
+                .status
+                .as_ref()
+                .map(|s| format!("{}", s))
+                .unwrap_or_else(|| "active".to_string())
         );
         if let Some(version) = &resource.version {
             println!("    {}: {}", "Version".dimmed(), version);
@@ -188,10 +216,12 @@ async fn handle_show(args: ShowResourceArgs) -> Result<()> {
     let resource = if let Ok(uuid) = args.identifier.parse::<Uuid>() {
         service.get_resource_by_uuid(uuid).await?
     } else {
-        let id = args.identifier.parse::<i64>()
-            .map_err(|_| DevErpError::Validation(
-                format!("Invalid resource identifier: {}. Must be a valid ID or UUID", args.identifier)
-            ))?;
+        let id = args.identifier.parse::<i64>().map_err(|_| {
+            DevErpError::Validation(format!(
+                "Invalid resource identifier: {}. Must be a valid ID or UUID",
+                args.identifier
+            ))
+        })?;
         service.get_resource(id).await?
     };
 
@@ -202,8 +232,14 @@ async fn handle_show(args: ShowResourceArgs) -> Result<()> {
     println!("{}: {}", "UUID".bright_cyan(), resource.uuid);
     println!("{}: {}", "Name".bright_cyan(), resource.name.bold());
     println!("{}: {}", "Type".bright_cyan(), resource.resource_type);
-    println!("{}: {}", "Status".bright_cyan(),
-        resource.status.as_ref().map(|s| format!("{}", s)).unwrap_or_else(|| "active".to_string())
+    println!(
+        "{}: {}",
+        "Status".bright_cyan(),
+        resource
+            .status
+            .as_ref()
+            .map(|s| format!("{}", s))
+            .unwrap_or_else(|| "active".to_string())
     );
 
     if let Some(desc) = &resource.description {
@@ -240,8 +276,16 @@ async fn handle_show(args: ShowResourceArgs) -> Result<()> {
     }
 
     println!();
-    println!("{}: {}", "Created".bright_cyan(), resource.created_at.format("%Y-%m-%d %H:%M:%S"));
-    println!("{}: {}", "Updated".bright_cyan(), resource.updated_at.format("%Y-%m-%d %H:%M:%S"));
+    println!(
+        "{}: {}",
+        "Created".bright_cyan(),
+        resource.created_at.format("%Y-%m-%d %H:%M:%S")
+    );
+    println!(
+        "{}: {}",
+        "Updated".bright_cyan(),
+        resource.updated_at.format("%Y-%m-%d %H:%M:%S")
+    );
 
     Ok(())
 }
@@ -255,31 +299,40 @@ async fn handle_update(args: UpdateResourceArgs) -> Result<()> {
         let resource = service.get_resource_by_uuid(uuid).await?;
         resource.id
     } else {
-        args.identifier.parse::<i64>()
-            .map_err(|_| DevErpError::Validation(
-                format!("Invalid resource identifier: {}. Must be a valid ID or UUID", args.identifier)
-            ))?
+        args.identifier.parse::<i64>().map_err(|_| {
+            DevErpError::Validation(format!(
+                "Invalid resource identifier: {}. Must be a valid ID or UUID",
+                args.identifier
+            ))
+        })?
     };
 
     // Parse resource type if provided
     let resource_type = if let Some(type_str) = args.resource_type {
-        Some(type_str.parse::<ResourceType>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            type_str
+                .parse::<ResourceType>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse status if provided
     let status = if let Some(status_str) = args.status {
-        Some(status_str.parse::<ResourceStatus>()
-            .map_err(|e| DevErpError::Validation(e))?)
+        Some(
+            status_str
+                .parse::<ResourceStatus>()
+                .map_err(DevErpError::Validation)?,
+        )
     } else {
         None
     };
 
     // Parse tags if provided
     let tags = args.tags.map(|tags_str| {
-        tags_str.split(',')
+        tags_str
+            .split(',')
             .map(|s| s.trim().to_string())
             .filter(|s| !s.is_empty())
             .collect()
@@ -307,7 +360,11 @@ async fn handle_update(args: UpdateResourceArgs) -> Result<()> {
     section_title("Resource Updated");
     println!("{}: {}", "ID".bright_cyan(), resource.id);
     println!("{}: {}", "Name".bright_cyan(), resource.name.bold());
-    println!("{}: {}", "Updated".bright_cyan(), resource.updated_at.format("%Y-%m-%d %H:%M:%S"));
+    println!(
+        "{}: {}",
+        "Updated".bright_cyan(),
+        resource.updated_at.format("%Y-%m-%d %H:%M:%S")
+    );
 
     Ok(())
 }
@@ -321,10 +378,12 @@ async fn handle_delete(args: DeleteResourceArgs) -> Result<()> {
         let resource = service.get_resource_by_uuid(uuid).await?;
         resource.id
     } else {
-        args.identifier.parse::<i64>()
-            .map_err(|_| DevErpError::Validation(
-                format!("Invalid resource identifier: {}. Must be a valid ID or UUID", args.identifier)
-            ))?
+        args.identifier.parse::<i64>().map_err(|_| {
+            DevErpError::Validation(format!(
+                "Invalid resource identifier: {}. Must be a valid ID or UUID",
+                args.identifier
+            ))
+        })?
     };
 
     // Get resource to display name
@@ -332,7 +391,10 @@ async fn handle_delete(args: DeleteResourceArgs) -> Result<()> {
 
     // Confirm deletion
     if !args.confirm {
-        let confirmed = confirm(&format!("Are you sure you want to delete resource '{}'?", resource.name));
+        let confirmed = confirm(&format!(
+            "Are you sure you want to delete resource '{}'?",
+            resource.name
+        ));
         if !confirmed {
             println!("Deletion cancelled.");
             return Ok(());
@@ -342,7 +404,10 @@ async fn handle_delete(args: DeleteResourceArgs) -> Result<()> {
     // Delete resource
     service.delete_resource(id).await?;
 
-    summary_line("Resource Deleted", &format!("'{}' deleted successfully", resource.name));
+    summary_line(
+        "Resource Deleted",
+        &format!("'{}' deleted successfully", resource.name),
+    );
 
     Ok(())
 }
@@ -365,8 +430,16 @@ async fn handle_link(args: LinkResourceArgs) -> Result<()> {
 
     // Display success message
     section_title("Resource Linked to Project");
-    println!("{}: {}", "Project ID".bright_cyan(), project_resource.project_id);
-    println!("{}: {}", "Resource ID".bright_cyan(), project_resource.resource_id);
+    println!(
+        "{}: {}",
+        "Project ID".bright_cyan(),
+        project_resource.project_id
+    );
+    println!(
+        "{}: {}",
+        "Resource ID".bright_cyan(),
+        project_resource.resource_id
+    );
     if let Some(notes) = &project_resource.usage_notes {
         println!("{}: {}", "Usage Notes".bright_cyan(), notes);
     }
@@ -374,7 +447,11 @@ async fn handle_link(args: LinkResourceArgs) -> Result<()> {
         println!("{}: {}", "Version Used".bright_cyan(), version);
     }
     if let Some(critical) = project_resource.is_critical {
-        println!("{}: {}", "Critical".bright_cyan(), if critical { "Yes" } else { "No" });
+        println!(
+            "{}: {}",
+            "Critical".bright_cyan(),
+            if critical { "Yes" } else { "No" }
+        );
     }
 
     Ok(())
@@ -385,11 +462,16 @@ async fn handle_unlink(args: UnlinkResourceArgs) -> Result<()> {
     let service = create_service().await?;
 
     // Unlink resource from project
-    service.unlink_resource_from_project(args.project_id, args.resource_id).await?;
+    service
+        .unlink_resource_from_project(args.project_id, args.resource_id)
+        .await?;
 
     summary_line(
         "Resource Unlinked",
-        &format!("Resource {} unlinked from project {}", args.resource_id, args.project_id)
+        &format!(
+            "Resource {} unlinked from project {}",
+            args.resource_id, args.project_id
+        ),
     );
 
     Ok(())
@@ -407,8 +489,16 @@ async fn handle_usage(args: UsageResourceArgs) -> Result<()> {
         println!();
         println!("{}: {}", "Resource ID".bright_cyan(), stats.resource_id);
         println!("{}: {}", "Resource Type".bright_cyan(), stats.resource_type);
-        println!("{}: {}", "Total Projects".bright_cyan(), stats.total_projects);
-        println!("{}: {}", "Critical Projects".bright_cyan(), stats.critical_projects);
+        println!(
+            "{}: {}",
+            "Total Projects".bright_cyan(),
+            stats.total_projects
+        );
+        println!(
+            "{}: {}",
+            "Critical Projects".bright_cyan(),
+            stats.critical_projects
+        );
     } else {
         // Get usage for all resources
         let all_stats = service.get_all_resource_usage().await?;
@@ -423,13 +513,19 @@ async fn handle_usage(args: UsageResourceArgs) -> Result<()> {
 
         for stats in all_stats {
             println!("  {} {}", "●".bright_green(), stats.resource_name.bold());
-            println!("    {}: {} | {}: {}",
-                "ID".dimmed(), stats.resource_id,
-                "Type".dimmed(), stats.resource_type
+            println!(
+                "    {}: {} | {}: {}",
+                "ID".dimmed(),
+                stats.resource_id,
+                "Type".dimmed(),
+                stats.resource_type
             );
-            println!("    {}: {} | {}: {}",
-                "Projects".dimmed(), stats.total_projects,
-                "Critical".dimmed(), stats.critical_projects
+            println!(
+                "    {}: {} | {}: {}",
+                "Projects".dimmed(),
+                stats.total_projects,
+                "Critical".dimmed(),
+                stats.critical_projects
             );
             println!();
         }

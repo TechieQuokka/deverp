@@ -1,13 +1,14 @@
-use sqlx::{PgPool, postgres::PgPoolOptions};
 use deverp::utils::error::DevErpError;
+use sqlx::{postgres::PgPoolOptions, PgPool};
 
 /// Creates a test database pool
 ///
 /// This function expects a DATABASE_URL environment variable to be set
 /// for testing purposes. Use a separate test database to avoid conflicts.
 pub async fn create_test_pool() -> Result<PgPool, DevErpError> {
-    let database_url = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://deverp_user:2147483647@localhost:5432/deverp_test".to_string());
+    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        "postgres://deverp_user:2147483647@localhost:5432/deverp_test".to_string()
+    });
 
     let pool = PgPoolOptions::new()
         .max_connections(5)

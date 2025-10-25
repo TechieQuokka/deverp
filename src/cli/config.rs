@@ -1,15 +1,15 @@
 // Configuration CLI commands
 
-use std::sync::Arc;
-use crate::Result;
 use super::commands::{ConfigCommand, OutputFormat};
 use crate::config::settings::Settings;
 use crate::infrastructure::database;
+use crate::Result;
+use std::sync::Arc;
 
 use crate::domain::config::service::ConfigService;
 use crate::infrastructure::repositories::config_repo::PostgresConfigRepository;
-use crate::utils::formatter::{table_header, table_row};
 use crate::utils::error::DevErpError;
+use crate::utils::formatter::{table_header, table_row};
 
 /// Handle config commands
 pub async fn handle(command: ConfigCommand, _format: OutputFormat) -> Result<()> {
@@ -33,10 +33,7 @@ pub async fn handle(command: ConfigCommand, _format: OutputFormat) -> Result<()>
     }
 }
 
-async fn handle_show(
-    service: ConfigService,
-    key: Option<String>,
-) -> Result<()> {
+async fn handle_show(service: ConfigService, key: Option<String>) -> Result<()> {
     match key {
         Some(k) => {
             // Show single configuration
@@ -60,7 +57,11 @@ async fn handle_show(
                     config.config_key,
                     config.config_value,
                     config.data_type.to_string(),
-                    if config.is_required { "Yes".to_string() } else { "No".to_string() },
+                    if config.is_required {
+                        "Yes".to_string()
+                    } else {
+                        "No".to_string()
+                    },
                     config.description.unwrap_or_else(|| "-".to_string()),
                 ]);
             }
@@ -89,8 +90,8 @@ async fn handle_set(
 async fn handle_reset(service: ConfigService, confirm: bool) -> Result<()> {
     if !confirm {
         return Err(DevErpError::Validation(
-            "Reset operation requires --confirm flag to prevent accidental data loss".to_string()
-        ).into());
+            "Reset operation requires --confirm flag to prevent accidental data loss".to_string(),
+        ));
     }
 
     service.reset_to_defaults().await?;
